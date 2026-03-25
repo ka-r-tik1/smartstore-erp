@@ -11,6 +11,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Netlify Deploy
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy Frontend to Netlify
         run: |
-          curl -s -X POST "https://api.netlify.com/build_hooks/69c364edc4f8107cd3d5d4c4"
+          npm install -g netlify-cli
+          netlify deploy --dir Frontend --site daaadd6f-857a-4e65-838f-1c43a2962dc6 --prod --auth nfp_5qTQ5cTWWEFAdG1RYcPjQ6SbxooVYRCnce96
