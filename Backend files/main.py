@@ -4,6 +4,7 @@
 # Frontend:   http://localhost:8000/
 
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -11,7 +12,8 @@ import uvicorn
 import os
 
 from app.core.config import settings
-from app.core.database import engine, Base
+from app.core.database import engine, Base, SessionLocal
+from app.core.auth import hash_password
 from app.api.health import router as health_router
 from app.api.auth import router as auth_router
 from app.api.products import router as products_router
@@ -57,10 +59,30 @@ from app.models.stock_transfer import StockTransfer, StockTransferItem
 
 Base.metadata.create_all(bind=engine)
 
+@asynccontextmanager
+async def lifespan(app):
+    db = SessionLocal()
+    try:
+        owner = db.query(User).filter(User.username == 'owner').first()
+        if not owner:
+            db.add(User(
+                username='owner',
+                hashed_password=hash_password('owner123'),
+                full_name='Store Owner',
+                role='owner',
+                is_active=True
+            ))
+            db.commit()
+            print('Default owner user created!')
+    finally:
+        db.close()
+    yield
+
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description=settings.APP_DESCRIPTION,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
