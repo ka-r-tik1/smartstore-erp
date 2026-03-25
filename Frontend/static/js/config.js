@@ -1,7 +1,7 @@
 // SmartStore ERP — Config + API Helper
 // API base URL aur token management
 
-const API_BASE = "http://localhost:8000";  // Backend FastAPI server
+const API_BASE = "https://smartstore-erp-production.up.railway.app";  // Railway Backend
 
 let authToken = localStorage.getItem("smartstore_token") || null;
 let currentUser = JSON.parse(localStorage.getItem("smartstore_user") || "null");

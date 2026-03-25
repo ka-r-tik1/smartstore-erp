@@ -1942,6 +1942,39 @@
     letter-spacing: 0.8px; text-transform: uppercase;
   }
 
+  /* ─── COMING SOON CARDS ─── */
+  .cs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:12px; margin-top:14px; }
+  .cs-card { background:#fff; border-radius:16px; padding:16px 14px; border:1.5px dashed rgba(139,92,246,0.35); cursor:pointer; transition:all 0.25s ease; position:relative; overflow:hidden; }
+  .cs-card:hover { border-color:#8b5cf6; border-style:solid; transform:translateY(-3px); box-shadow:0 10px 28px rgba(139,92,246,0.18); }
+  .cs-card-icon { font-size:26px; margin-bottom:8px; }
+  .cs-card-title { font-size:12px; font-weight:800; color:#1e293b; margin-bottom:4px; line-height:1.3; }
+  .cs-card-short { font-size:11px; color:#64748b; margin-bottom:10px; line-height:1.4; }
+  .cs-lock { position:absolute; top:10px; right:10px; font-size:14px; opacity:0.35; }
+  .cs-soon-badge { display:inline-block; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; font-size:9px; font-weight:800; padding:3px 10px; border-radius:20px; letter-spacing:0.3px; }
+  /* Drawer overlay */
+  .cs-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:999; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  .cs-overlay.open { opacity:1; pointer-events:all; }
+  /* Drawer panel */
+  .cs-drawer { position:fixed; right:-440px; top:0; width:400px; max-width:96vw; height:100vh; background:#fff; z-index:1000; box-shadow:-8px 0 40px rgba(0,0,0,0.15); transition:right 0.32s cubic-bezier(.4,0,.2,1); overflow-y:auto; border-radius:20px 0 0 20px; }
+  .cs-drawer.open { right:0; }
+  .cs-drawer-inner { padding:28px 22px 40px; }
+  .cs-drawer-close { position:absolute; top:14px; right:14px; background:#f1f5f9; border:none; border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:17px; color:#475569; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+  .cs-drawer-close:hover { background:#e2e8f0; }
+  .cs-drawer-hero { text-align:center; padding:16px 0 12px; }
+  .cs-drawer-hero-icon { font-size:52px; margin-bottom:8px; }
+  .cs-drawer-title { font-size:19px; font-weight:900; color:#1e293b; margin-bottom:6px; }
+  .cs-drawer-badge { display:inline-block; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; font-size:11px; font-weight:700; padding:4px 16px; border-radius:20px; margin-bottom:14px; }
+  .cs-drawer-desc { font-size:13px; color:#475569; line-height:1.75; margin-bottom:16px; background:#f8fafc; border-radius:12px; padding:14px; }
+  .cs-drawer-how { margin-bottom:16px; }
+  .cs-drawer-how-title { font-size:12px; font-weight:800; color:#7c3aed; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
+  .cs-drawer-step { font-size:12px; color:#334155; padding:7px 0; border-bottom:1px solid #f1f5f9; display:flex; gap:8px; align-items:flex-start; }
+  .cs-drawer-step:last-child { border:none; }
+  .cs-step-num { background:#8b5cf6; color:#fff; border-radius:50%; width:18px; height:18px; min-width:18px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; margin-top:1px; }
+  .cs-difficulty { display:inline-block; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; margin-top:4px; }
+  .cs-easy { background:#dcfce7; color:#166534; }
+  .cs-medium { background:#fef9c3; color:#854d0e; }
+  .cs-hard { background:#fee2e2; color:#991b1b; }
+
   /* ─── CRITICAL STOCK MINI ─── */
   .mini-stock-bar {
     height: 5px;
@@ -3382,6 +3415,132 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- ══════ COMING SOON SECTION ══════ -->
+      <div style="margin-top:32px; padding:0 2px 32px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+          <span style="font-size:26px;">🔮</span>
+          <div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;" data-i18n="cs_section_title">Coming Soon — AI Features</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px;" data-i18n="cs_section_sub">Click any card to preview upcoming features</div>
+          </div>
+        </div>
+        <div class="cs-grid">
+          <!-- 1 -->
+          <div class="cs-card" onclick="showCS('expiry')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">⏰</div>
+            <div class="cs-card-title" data-i18n="cs_expiry_t">Expiry Smart Pricing</div>
+            <div class="cs-card-short" data-i18n="cs_expiry_s">Auto discount as expiry nears</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 2 -->
+          <div class="cs-card" onclick="showCS('festival')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">🎆</div>
+            <div class="cs-card-title" data-i18n="cs_festival_t">Festival Season Schemes</div>
+            <div class="cs-card-short" data-i18n="cs_festival_s">Auto offers before every festival</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 3 -->
+          <div class="cs-card" onclick="showCS('deadstock')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">📦</div>
+            <div class="cs-card-title" data-i18n="cs_dead_t">Dead Stock Clearance</div>
+            <div class="cs-card-short" data-i18n="cs_dead_s">AI clears unsold stock automatically</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 4 -->
+          <div class="cs-card" onclick="showCS('loyalty')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">👑</div>
+            <div class="cs-card-title" data-i18n="cs_loyal_t">Loyalty Customer</div>
+            <div class="cs-card-short" data-i18n="cs_loyal_s">VIP discounts for regular buyers</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 5 -->
+          <div class="cs-card" onclick="showCS('combo')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">🧩</div>
+            <div class="cs-card-title" data-i18n="cs_combo_t">Combo Suggestion AI</div>
+            <div class="cs-card-short" data-i18n="cs_combo_s">Smart combo offers at POS</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 6 -->
+          <div class="cs-card" onclick="showCS('weather')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">🌧️</div>
+            <div class="cs-card-title" data-i18n="cs_weather_t">Weather Based Schemes</div>
+            <div class="cs-card-short" data-i18n="cs_weather_s">Rain/summer auto offers</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 7 -->
+          <div class="cs-card" onclick="showCS('reorder')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">🔄</div>
+            <div class="cs-card-title" data-i18n="cs_reorder_t">Smart Reorder + Supplier</div>
+            <div class="cs-card-short" data-i18n="cs_reorder_s">Best supplier auto-selected</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 8 -->
+          <div class="cs-card" onclick="showCS('flash')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">⚡</div>
+            <div class="cs-card-title" data-i18n="cs_flash_t">Flash Sale</div>
+            <div class="cs-card-short" data-i18n="cs_flash_s">1-hour sale on slow hours</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 9 -->
+          <div class="cs-card" onclick="showCS('bulk')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">📊</div>
+            <div class="cs-card-title" data-i18n="cs_bulk_t">Bulk Buyer Slab</div>
+            <div class="cs-card-short" data-i18n="cs_bulk_s">Auto slab discount for dealers</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 10 -->
+          <div class="cs-card" onclick="showCS('losslead')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">🎯</div>
+            <div class="cs-card-title" data-i18n="cs_loss_t">Loss Leader Strategy</div>
+            <div class="cs-card-short" data-i18n="cs_loss_s">Attract customers with strategic pricing</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 11 -->
+          <div class="cs-card" onclick="showCS('forecast')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">📈</div>
+            <div class="cs-card-title" data-i18n="cs_forecast_t">Business Forecast</div>
+            <div class="cs-card-short" data-i18n="cs_forecast_s">3-year revenue prediction</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 12 -->
+          <div class="cs-card" onclick="showCS('analytics')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">👥</div>
+            <div class="cs-card-title" data-i18n="cs_analytics_t">Customer Analytics</div>
+            <div class="cs-card-short" data-i18n="cs_analytics_s">Who drives your store growth</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+          <!-- 13 -->
+          <div class="cs-card" onclick="showCS('roadmap')">
+            <span class="cs-lock">🔒</span>
+            <div class="cs-card-icon">🗺️</div>
+            <div class="cs-card-title" data-i18n="cs_roadmap_t">Full Roadmap</div>
+            <div class="cs-card-short" data-i18n="cs_roadmap_s">See all planned features & timeline</div>
+            <span class="cs-soon-badge" data-i18n="cs_coming">🔜 Coming Soon</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coming Soon Drawer -->
+      <div class="cs-overlay" id="cs-overlay" onclick="closeCS()"></div>
+      <div class="cs-drawer" id="cs-drawer">
+        <div class="cs-drawer-inner">
+          <button class="cs-drawer-close" onclick="closeCS()">✕</button>
+          <div id="cs-drawer-content"></div>
         </div>
       </div>
 
@@ -6439,6 +6598,36 @@ const i18n = {
     lbl_no_po: 'No PO',
     lbl_current: 'Current',
     lbl_min: 'Min',
+    // ── Coming Soon section ──
+    cs_section_title: 'Coming Soon — AI Features',
+    cs_section_sub: 'Click any card to preview upcoming features',
+    cs_coming: '🔜 Coming Soon',
+    cs_expiry_t: 'Expiry Smart Pricing',
+    cs_expiry_s: 'Auto discount as expiry nears',
+    cs_festival_t: 'Festival Season Schemes',
+    cs_festival_s: 'Auto offers before every festival',
+    cs_dead_t: 'Dead Stock Clearance',
+    cs_dead_s: 'AI clears unsold stock automatically',
+    cs_loyal_t: 'Loyalty Customer',
+    cs_loyal_s: 'VIP discounts for regular buyers',
+    cs_combo_t: 'Combo Suggestion AI',
+    cs_combo_s: 'Smart combo offers at POS',
+    cs_weather_t: 'Weather Based Schemes',
+    cs_weather_s: 'Rain/summer auto offers',
+    cs_reorder_t: 'Smart Reorder + Supplier',
+    cs_reorder_s: 'Best supplier auto-selected',
+    cs_flash_t: 'Flash Sale',
+    cs_flash_s: '1-hour sale on slow hours',
+    cs_bulk_t: 'Bulk Buyer Slab',
+    cs_bulk_s: 'Auto slab discount for dealers',
+    cs_loss_t: 'Loss Leader Strategy',
+    cs_loss_s: 'Attract customers with strategic pricing',
+    cs_forecast_t: 'Business Forecast',
+    cs_forecast_s: '3-year revenue prediction',
+    cs_analytics_t: 'Customer Analytics',
+    cs_analytics_s: 'Who drives your store growth',
+    cs_roadmap_t: 'Full Roadmap',
+    cs_roadmap_s: 'See all planned features & timeline',
   },
   mr: {
     // ── Store ──
@@ -6897,14 +7086,149 @@ const i18n = {
     lbl_no_po: 'PO नाही',
     lbl_current: 'सध्या',
     lbl_min: 'किमान',
+    // ── Coming Soon section ──
+    cs_section_title: 'लवकरच येणार — AI वैशिष्ट्ये',
+    cs_section_sub: 'येणाऱ्या वैशिष्ट्यांचे पूर्वावलोकन पाहण्यासाठी कार्डवर क्लिक करा',
+    cs_coming: '🔜 लवकरच येणार',
+    cs_expiry_t: 'एक्सपायरी स्मार्ट किंमत',
+    cs_expiry_s: 'एक्सपायरी जवळ आल्यावर आपोआप सवलत',
+    cs_festival_t: 'उत्सव व हंगाम ऑफर',
+    cs_festival_s: 'प्रत्येक सणाच्या आधी आपोआप ऑफर',
+    cs_dead_t: 'डेड स्टॉक क्लिअरन्स',
+    cs_dead_s: 'AI आपोआप न विकलेला माल क्लिअर करतो',
+    cs_loyal_t: 'नियमित ग्राहक',
+    cs_loyal_s: 'नियमित खरेदीदारांसाठी VIP सवलत',
+    cs_combo_t: 'कॉम्बो सूचना AI',
+    cs_combo_s: 'POS वर स्मार्ट कॉम्बो ऑफर',
+    cs_weather_t: 'हवामानावर आधारित ऑफर',
+    cs_weather_s: 'पाऊस/उन्हाळ्यात आपोआप ऑफर',
+    cs_reorder_t: 'स्मार्ट रिऑर्डर + पुरवठादार',
+    cs_reorder_s: 'सर्वोत्तम पुरवठादार आपोआप निवडला जातो',
+    cs_flash_t: 'फ्लॅश सेल',
+    cs_flash_s: 'कमी गर्दीच्या वेळी १ तासाची सेल',
+    cs_bulk_t: 'घाऊक खरेदीदार स्लॅब',
+    cs_bulk_s: 'डीलरसाठी आपोआप स्लॅब सवलत',
+    cs_loss_t: 'लॉस लीडर रणनीती',
+    cs_loss_s: 'धोरणात्मक किंमतीने ग्राहक आकर्षित करा',
+    cs_forecast_t: 'व्यवसाय अंदाज',
+    cs_forecast_s: '३ वर्षांचा महसूल अंदाज',
+    cs_analytics_t: 'ग्राहक विश्लेषण',
+    cs_analytics_s: 'कोण चालवतो तुमच्या दुकानाची वाढ',
+    cs_roadmap_t: 'संपूर्ण रोडमॅप',
+    cs_roadmap_s: 'सर्व नियोजित वैशिष्ट्ये आणि वेळापत्रक पाहा',
   }
 };
+
+// ══════ COMING SOON DRAWER ══════
+const _csData = {
+  expiry: {
+    icon:'⏰', diff:'easy',
+    en:{ title:'Expiry Smart Pricing', desc:'AI automatically detects products nearing expiry and suggests progressive discounts. The closer the expiry, the higher the discount — so nothing goes to waste and you recover maximum value.', steps:['System checks expiry dates daily','30 days left → 5% off suggested','15 days left → 15% off','7 days left → 30% off','3 days left → 50% off + Owner alert'] },
+    mr:{ title:'एक्सपायरी स्मार्ट किंमत', desc:'AI आपोआप जवळ येणाऱ्या एक्सपायरी असलेल्या उत्पादनांना ओळखते आणि सवलत सुचवते. एक्सपायरी जितकी जवळ, सवलत तितकी जास्त — म्हणजे काहीही वाया जाणार नाही.', steps:['दररोज एक्सपायरी तारखा तपासल्या जातात','३० दिवस बाकी → ५% सवलत','१५ दिवस बाकी → १५% सवलत','७ दिवस बाकी → ३०% सवलत','३ दिवस बाकी → ५०% + मालकाला सूचना'] }
+  },
+  festival: {
+    icon:'🎆', diff:'easy',
+    en:{ title:'Festival & Season Schemes', desc:'AI reads the Indian festival calendar and automatically suggests relevant product schemes 7 days before every major festival — Diwali, Holi, Ganesh Chaturthi, wedding season and more.', steps:['Festival calendar pre-loaded','7 days before → AI suggests schemes','Products matched to festival','One-click scheme activation','Expected revenue shown'] },
+    mr:{ title:'उत्सव व हंगाम ऑफर', desc:'AI भारतीय सणांचे कॅलेंडर वाचतो आणि प्रत्येक मोठ्या सणाच्या ७ दिवस आधी संबंधित उत्पादनांसाठी ऑफर सुचवतो — दिवाळी, होळी, गणेश चतुर्थी, लग्नाचा हंगाम.', steps:['सण कॅलेंडर आधीच लोड केलेले','७ दिवस आधी → AI ऑफर सुचवतो','उत्पादने सणाशी जुळवली जातात','एका क्लिकने योजना सक्रिय करा','अपेक्षित महसूल दाखवला जातो'] }
+  },
+  deadstock: {
+    icon:'📦', diff:'easy',
+    en:{ title:'Dead Stock Clearance AI', desc:'Products sitting unsold for 30+ days are automatically flagged. AI suggests the best clearance offer — Buy 1 Get 1, flat discount, or combo — to move inventory before it becomes a total loss.', steps:['Products unsold 30 days → flagged','AI calculates best offer type','Clearance scheme auto-suggested','Stock value recovered before loss','Report shows saved amount'] },
+    mr:{ title:'डेड स्टॉक क्लिअरन्स AI', desc:'३०+ दिवसांपासून न विकलेल्या उत्पादनांना आपोआप फ्लॅग केले जाते. AI सर्वोत्तम क्लिअरन्स ऑफर सुचवतो — Buy 1 Get 1, फ्लॅट सवलत, किंवा कॉम्बो — जेणेकरून तोटा टाळता येईल.', steps:['३० दिवस न विकलेले → फ्लॅग','AI सर्वोत्तम ऑफर प्रकार ठरवतो','क्लिअरन्स योजना आपोआप सुचवली जाते','तोटा होण्यापूर्वी स्टॉक विकला जातो','वाचवलेली रक्कम रिपोर्टमध्ये दिसते'] }
+  },
+  loyalty: {
+    icon:'👑', diff:'medium',
+    en:{ title:'Loyalty Customer AI', desc:'AI identifies your top regular customers based on purchase frequency and total spend. They automatically get VIP status with special discounts — making them feel valued and ensuring they keep coming back.', steps:['Customer purchase history analyzed','10+ bills or ₹5000+ spend → VIP','Auto loyalty discount on next visit','VIP badge shown on their profile','Monthly loyalty report for owner'] },
+    mr:{ title:'लॉयल्टी ग्राहक AI', desc:'AI खरेदीची वारंवारता आणि एकूण खर्चाच्या आधारे तुमचे नियमित ग्राहक ओळखतो. त्यांना आपोआप VIP दर्जा मिळतो — विशेष सवलतीसह.', steps:['ग्राहकाचा खरेदी इतिहास विश्लेषित','१०+ बिले किंवा ₹५०००+ खर्च → VIP','पुढील भेटीत आपोआप लॉयल्टी सवलत','त्यांच्या प्रोफाईलवर VIP बॅज','मालकासाठी मासिक लॉयल्टी रिपोर्ट'] }
+  },
+  combo: {
+    icon:'🧩', diff:'medium',
+    en:{ title:'Combo Suggestion AI', desc:'When a cashier scans a product at POS, AI instantly suggests frequently bought-together products as a combo offer. Increases average bill value and helps customers get what they need.', steps:['Product scanned at POS','AI checks "bought together" patterns','Combo offer suggested instantly','Cashier shows offer to customer','Average bill value increases'] },
+    mr:{ title:'कॉम्बो सुचना AI', desc:'कॅशियरने POS वर उत्पादन स्कॅन केल्यावर, AI लगेच एकत्र खरेदी केल्या जाणाऱ्या उत्पादनांचा कॉम्बो ऑफर सुचवतो. सरासरी बिल मूल्य वाढते.', steps:['POS वर उत्पादन स्कॅन केले','AI "एकत्र खरेदी" पॅटर्न तपासतो','कॉम्बो ऑफर लगेच सुचवला जातो','कॅशियर ग्राहकाला ऑफर दाखवतो','सरासरी बिल मूल्य वाढते'] }
+  },
+  weather: {
+    icon:'🌧️', diff:'medium',
+    en:{ title:'Weather Based Schemes', desc:'AI connects to weather API and detects today\'s weather. Rainy day? Auto-suggest Tea, Biscuits, Maggi offers. Hot summer? Push cold drinks, ice cream. Smart selling based on what the weather demands.', steps:['Weather API checks daily forecast','Rain detected → hot item offers','Summer heat → cold drink scheme','Winter → tea, coffee promotions','Owner notified of weather offers'] },
+    mr:{ title:'हवामान आधारित ऑफर', desc:'AI हवामान API शी कनेक्ट होतो. पावसाळा? चहा, बिस्किटे, मॅगीचे ऑफर. उन्हाळा? थंड पेये, आइस्क्रीम. हवामानानुसार स्मार्ट विक्री.', steps:['हवामान API दररोज तपासतो','पाऊस → गरम पदार्थांचे ऑफर','उन्हाळा → थंड पेयांची योजना','हिवाळा → चहा, कॉफी प्रमोशन','मालकाला हवामान ऑफरची सूचना'] }
+  },
+  reorder: {
+    icon:'🔄', diff:'easy',
+    en:{ title:'Smart Reorder + Supplier Deal', desc:'When stock is about to run out, AI compares all your suppliers\' prices and suggests the best deal. Order from the cheapest supplier at the right time — save money every single reorder.', steps:['Stock running low detected','All supplier prices compared','Best deal highlighted automatically','Suggested order qty calculated','One-click PO to best supplier'] },
+    mr:{ title:'स्मार्ट रिऑर्डर + पुरवठादार डील', desc:'स्टॉक संपण्याच्या वेळी, AI सर्व पुरवठादारांच्या किमती तुलना करतो आणि सर्वोत्तम डील सुचवतो. दर वेळी स्वस्त पुरवठादाराकडून ऑर्डर करा.', steps:['स्टॉक कमी होणे ओळखले जाते','सर्व पुरवठादारांच्या किमती तुलना','सर्वोत्तम डील आपोआप हायलाइट','सुचवलेली ऑर्डर क्वांटिटी मोजली जाते','एका क्लिकने सर्वोत्तम पुरवठादाराला PO'] }
+  },
+  flash: {
+    icon:'⚡', diff:'medium',
+    en:{ title:'Flash Sale AI', desc:'AI analyzes hourly footfall patterns and detects slow hours in your shop. It then auto-suggests a 1-hour flash sale to boost traffic. Customers get notified and rush in during off-peak times.', steps:['Hourly sales patterns analyzed','Slow hour detected (e.g. 10-11 AM)','Flash sale scheme suggested','SMS/WhatsApp alert to customers','Sales spike during slow period'] },
+    mr:{ title:'फ्लॅश सेल AI', desc:'AI दर तासाच्या ग्राहक संख्येचे पॅटर्न विश्लेषित करतो आणि कमी गर्दीचे तास ओळखतो. मग आपोआप १ तासाचा फ्लॅश सेल सुचवतो.', steps:['दर तासाच्या विक्रीचे पॅटर्न विश्लेषित','कमी गर्दीचा वेळ ओळखला (उदा. १०-११ AM)','फ्लॅश सेल योजना सुचवली जाते','ग्राहकांना SMS/WhatsApp सूचना','कमी वेळात विक्री वाढते'] }
+  },
+  bulk: {
+    icon:'📊', diff:'easy',
+    en:{ title:'Bulk Buyer Slab Discount', desc:'Dealers and wholesale buyers automatically get slab-based discounts based on their order value. The more they buy, the more they save — encouraging larger orders every time.', steps:['Order value tracked automatically','₹10,000+ → 5% auto discount','₹25,000+ → 10% discount','₹50,000+ → 15% discount','Dealer sees savings on invoice'] },
+    mr:{ title:'घाऊक खरेदी स्लॅब सवलत', desc:'डीलर आणि घाऊक खरेदीदारांना त्यांच्या ऑर्डर मूल्यावर आधारित स्लॅब सवलत आपोआप मिळते. जितकी जास्त खरेदी, तितकी जास्त बचत.', steps:['ऑर्डर मूल्य आपोआप ट्रॅक केले जाते','₹१०,०००+ → ५% आपोआप सवलत','₹२५,०००+ → १०% सवलत','₹५०,०००+ → १५% सवलत','डीलरला बिलावर बचत दिसते'] }
+  },
+  losslead: {
+    icon:'🎯', diff:'hard',
+    en:{ title:'Loss Leader Strategy', desc:'AI identifies which products bring the most customers to your shop. It suggests pricing that product slightly below cost — customers come for it, but buy other profitable items too. Net profit increases.', steps:['High footfall products identified','Strategic below-cost pricing suggested','Customer traffic increases','Other product sales increase','Net profit analysis shown'] },
+    mr:{ title:'लॉस लीडर धोरण', desc:'AI ओळखतो की कोणती उत्पादने सर्वाधिक ग्राहक आणतात. त्या उत्पादनाची किंमत थोडी खाली सुचवतो — ग्राहक त्यासाठी येतात, पण इतर फायदेशीर वस्तूही खरेदी करतात.', steps:['जास्त गर्दी आणणारी उत्पादने ओळखली','धोरणात्मक कमी किमतीचे सुझाव','ग्राहकांची संख्या वाढते','इतर उत्पादनांची विक्री वाढते','निव्वळ नफ्याचे विश्लेषण दाखवले जाते'] }
+  },
+  forecast: {
+    icon:'📈', diff:'medium',
+    en:{ title:'Business Forecast (3-Year)', desc:'Like a stock market chart for your shop — AI predicts your revenue for the next 3 years based on your sales history, location growth, FMCG industry trends, and seasonal patterns. Know your business future today.', steps:['Past 1-2 years sales analyzed','Location & market growth factored in','Festival & seasonal patterns mapped','3-year revenue chart generated','Monthly breakdown with confidence %'] },
+    mr:{ title:'व्यवसाय अंदाज (३ वर्षे)', desc:'तुमच्या दुकानासाठी शेअर बाजारासारखे चार्ट — AI तुमच्या विक्री इतिहास, स्थान वाढ, FMCG ट्रेंड आणि हंगामी पॅटर्नच्या आधारे पुढील ३ वर्षांचा महसूल सांगतो.', steps:['मागील १-२ वर्षांची विक्री विश्लेषित','स्थान आणि बाजार वाढ विचारात घेतली','सण व हंगामी पॅटर्न मॅप केले','३ वर्षांचा महसूल चार्ट तयार','मासिक तपशील आणि अंदाज % सह'] }
+  },
+  analytics: {
+    icon:'👥', diff:'medium',
+    en:{ title:'Customer Analytics Screen', desc:'Discover who is really driving your store\'s growth. See your top 10 regular customers, their total spend, visit frequency, and how much revenue they contributed. Reward them before competitors steal them.', steps:['All customer purchase data analyzed','Top 10 regulars identified','Revenue contribution calculated','Growth attributed to loyal customers','Retention risk score shown'] },
+    mr:{ title:'ग्राहक विश्लेषण स्क्रीन', desc:'तुमच्या दुकानाची वाढ कोण घडवत आहे ते शोधा. तुमचे शीर्ष १० नियमित ग्राहक, त्यांचा एकूण खर्च, भेटींची वारंवारता आणि त्यांनी किती महसूल दिला ते पाहा.', steps:['सर्व ग्राहकांच्या खरेदीचे विश्लेषण','शीर्ष १० नियमित ग्राहक ओळखले','महसूल योगदान मोजले जाते','निष्ठावान ग्राहकांमुळे वाढ दिसते','ग्राहक टिकवण्याचा धोका स्कोर'] }
+  },
+  roadmap: {
+    icon:'🗺️', diff:'easy',
+    en:{ title:'Full Product Roadmap', desc:'A dedicated screen showing everything that is live, everything in development, and everything planned for SmartStore ERP. Clients can see the full vision — what they get today and what is coming next.', steps:['All 18+ screens listed with status','Coming Soon features with timeline','AI features roadmap (10 ideas)','Version history & updates','Request a feature button'] },
+    mr:{ title:'पूर्ण उत्पादन रोडमॅप', desc:'SmartStore ERP साठी काय लाइव्ह आहे, काय विकसित होत आहे आणि काय नियोजित आहे ते दाखवणारी एक समर्पित स्क्रीन.', steps:['सर्व १८+ स्क्रीन स्थितीसह सूचीबद्ध','येणाऱ्या सुविधा टाइमलाइनसह','AI फीचर रोडमॅप (१० कल्पना)','आवृत्ती इतिहास आणि अपडेट्स','फीचर विनंती बटण'] }
+  }
+};
+
+function showCS(id) {
+  const d = _csData[id];
+  if (!d) return;
+  const isMr = typeof currentLang !== 'undefined' && currentLang === 'mr';
+  const lang = isMr ? d.mr : d.en;
+  const diffMap = { easy: isMr ? '🟢 सोपे' : '🟢 Easy', medium: isMr ? '🟡 मध्यम' : '🟡 Medium', hard: isMr ? '🔴 कठीण' : '🔴 Hard' };
+  const diffClass = { easy:'cs-easy', medium:'cs-medium', hard:'cs-hard' };
+  const stepsHtml = lang.steps.map((s,i) => `<div class="cs-drawer-step"><span class="cs-step-num">${i+1}</span><span>${s}</span></div>`).join('');
+  document.getElementById('cs-drawer-content').innerHTML = `
+    <div class="cs-drawer-hero">
+      <div class="cs-drawer-hero-icon">${d.icon}</div>
+      <div class="cs-drawer-title">${lang.title}</div>
+      <span class="cs-drawer-badge">${isMr ? '🔜 लवकरच येणार' : '🔜 Coming Soon'}</span>
+      <div><span class="cs-difficulty ${diffClass[d.diff]}">${diffMap[d.diff]}</span></div>
+    </div>
+    <div class="cs-drawer-desc">${lang.desc}</div>
+    <div class="cs-drawer-how">
+      <div class="cs-drawer-how-title">${isMr ? '⚙️ हे कसे काम करेल' : '⚙️ How it will work'}</div>
+      ${stepsHtml}
+    </div>
+  `;
+  document.getElementById('cs-overlay').classList.add('open');
+  document.getElementById('cs-drawer').classList.add('open');
+}
+
+function closeCS() {
+  document.getElementById('cs-overlay').classList.remove('open');
+  document.getElementById('cs-drawer').classList.remove('open');
+}
 
 let currentLang = localStorage.getItem('fmcg_erp_lang') || 'en';
 
 function applyLanguage(lang) {
   currentLang = lang;
   localStorage.setItem('fmcg_erp_lang', lang);
+  // Mobile keyboard hint — document + all inputs pe lang set karo
+  document.documentElement.setAttribute('lang', lang === 'mr' ? 'mr' : 'en');
+  document.querySelectorAll('input[type="text"], input:not([type]), textarea').forEach(function(el) {
+    el.setAttribute('lang', lang === 'mr' ? 'mr' : 'en');
+    el.setAttribute('inputmode', 'text');
+  });
   // Enable/disable global Marathi phonetic keyboard on all text inputs
   if (lang === 'mr') {
     if (typeof enableMarathiKeyboard === 'function') enableMarathiKeyboard();
