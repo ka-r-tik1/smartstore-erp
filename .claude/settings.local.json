@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\Shree\\\\.claude\\\\projects\\\\D--claude-only-NEW-ERP-START-PROJECT\\\\memory\"\" 2>/dev/null || echo \"Directory empty or not found \")",
+      "Bash(curl -s http://localhost:8000/)",
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
+    ]
+  }
+}

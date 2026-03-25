@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "smartstore-frontend",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "3456", "--directory", "D:/claude only/NEW ERP START PROJECT/Frontend"],
+      "port": 3456
+    }
+  ]
+}

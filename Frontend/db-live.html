@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SmartStore — Live DB Viewer</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0f172a; color:#e2e8f0; font-family:'Segoe UI',sans-serif; font-size:13px; }
+
+  header {
+    background:linear-gradient(135deg,#1e293b,#0f172a);
+    border-bottom:1px solid #334155;
+    padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  header h1 { font-size:16px; font-weight:700; color:#38bdf8; letter-spacing:.5px; }
+  .pulse { display:inline-block; width:8px; height:8px; background:#22c55e; border-radius:50%; margin-right:8px; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+  .last-update { font-size:11px; color:#64748b; }
+
+  .tabs { display:flex; gap:4px; padding:12px 24px 0; border-bottom:1px solid #1e293b; }
+  .tab { padding:8px 18px; border-radius:8px 8px 0 0; cursor:pointer; font-weight:600; font-size:12px; color:#64748b; transition:all .2s; border:1px solid transparent; border-bottom:none; }
+  .tab:hover { color:#94a3b8; }
+  .tab.active { background:#1e293b; color:#38bdf8; border-color:#334155; }
+
+  .content { padding:20px 24px; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+
+  .stats-row { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .stat-card { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:14px 20px; min-width:140px; }
+  .stat-card .num { font-size:28px; font-weight:800; color:#38bdf8; }
+  .stat-card .lbl { font-size:11px; color:#64748b; margin-top:2px; }
+
+  table { width:100%; border-collapse:collapse; background:#1e293b; border-radius:10px; overflow:hidden; }
+  thead tr { background:#0f172a; }
+  th { padding:10px 14px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:#64748b; font-weight:600; }
+  td { padding:10px 14px; border-bottom:1px solid #0f172a; color:#cbd5e1; }
+  tr:last-child td { border-bottom:none; }
+  tr.new-row { animation:flashIn .8s ease; }
+  @keyframes flashIn { from{background:#0c4a2e} to{background:transparent} }
+
+  .badge { padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; }
+  .badge-green { background:#dcfce7; color:#166534; }
+  .badge-blue  { background:#dbeafe; color:#1d4ed8; }
+  .badge-purple{ background:#f3e8ff; color:#7c3aed; }
+  .badge-orange{ background:#fef3c7; color:#92400e; }
+  .badge-red   { background:#fee2e2; color:#991b1b; }
+
+  .empty { text-align:center; padding:40px; color:#475569; font-size:14px; }
+  .error { text-align:center; padding:40px; color:#f87171; font-size:13px; }
+
+  .refresh-btn {
+    background:#1e40af; color:#fff; border:none; padding:8px 16px;
+    border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;
+    transition:background .2s;
+  }
+  .refresh-btn:hover { background:#2563eb; }
+
+  select#interval-sel {
+    background:#1e293b; color:#94a3b8; border:1px solid #334155;
+    padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="pulse"></span>SmartStore — Live DB Viewer</h1>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <select id="interval-sel" onchange="setRefreshInterval(this.value)">
+      <option value="3000">Auto 3s</option>
+      <option value="5000">Auto 5s</option>
+      <option value="10000">Auto 10s</option>
+      <option value="0">Manual</option>
+    </select>
+    <button class="refresh-btn" onclick="refreshAll()">⟳ Refresh Now</button>
+    <span class="last-update" id="last-update">–</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('products')">Products</div>
+  <div class="tab" onclick="switchTab('bills')">Bills / Orders</div>
+  <div class="tab" onclick="switchTab('stock')">Stock Movements</div>
+  <div class="tab" onclick="switchTab('dealers')">Dealers</div>
+  <div class="tab" onclick="switchTab('staff')">Staff</div>
+  <div class="tab" onclick="switchTab('all')">All Counts</div>
+</div>
+
+<div class="content">
+  <!-- Products -->
+  <div class="panel active" id="panel-products">
+    <div class="stats-row" id="stats-products"></div>
+    <div id="tbl-products"></div>
+  </div>
+  <!-- Bills -->
+  <div class="panel" id="panel-bills">
+    <div class="stats-row" id="stats-bills"></div>
+    <div id="tbl-bills"></div>
+  </div>
+  <!-- Stock -->
+  <div class="panel" id="panel-stock">
+    <div id="tbl-stock"></div>
+  </div>
+  <!-- Dealers -->
+  <div class="panel" id="panel-dealers">
+    <div id="tbl-dealers"></div>
+  </div>
+  <!-- Staff -->
+  <div class="panel" id="panel-staff">
+    <div id="tbl-staff"></div>
+  </div>
+  <!-- All Counts -->
+  <div class="panel" id="panel-all">
+    <div class="stats-row" id="stats-all" style="flex-wrap:wrap;"></div>
+  </div>
+</div>
+
+<script>
+const BASE = 'http://localhost:8000';
+let token = null;
+let refreshTimer = null;
+let currentTab = 'products';
+let prevCounts = {};
+
+async function getToken() {
+  if (token) return token;
+  const r = await fetch(BASE + '/api/auth/login', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:'admin', password:'admin123'})
+  });
+  const d = await r.json();
+  token = d.access_token;
+  return token;
+}
+
+async function api(path) {
+  const t = await getToken();
+  const r = await fetch(BASE + path, { headers:{'Authorization':'Bearer '+t} });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function fmt(v) { return v !== undefined && v !== null ? v : '—'; }
+function rupee(v) { return '₹' + (v || 0); }
+function payBadge(m) {
+  const map = { upi:'badge-blue', cash:'badge-green', card:'badge-purple', udhaar:'badge-orange' };
+  return '<span class="badge '+(map[m]||'badge-blue')+'">'+(m||'cash').toUpperCase()+'</span>';
+}
+
+// ── Products ──────────────────────────────────────
+async function loadProducts() {
+  const el = document.getElementById('tbl-products');
+  const stats = document.getElementById('stats-products');
+  try {
+    const data = await api('/api/products/?limit=100');
+    stats.innerHTML = `
+      <div class="stat-card"><div class="num">${data.length}</div><div class="lbl">Total Products</div></div>
+      <div class="stat-card"><div class="num">${data.filter(p=>p.stock_qty<=p.reorder_level).length}</div><div class="lbl">Low Stock</div></div>
+      <div class="stat-card"><div class="num">${data.filter(p=>p.stock_qty===0).length}</div><div class="lbl">Out of Stock</div></div>
+    `;
+    if (!data.length) { el.innerHTML='<div class="empty">No products yet</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Barcode</th><th>MRP</th><th>Selling Price</th><th>Cost</th><th>Stock</th><th>Reorder Lvl</th><th>GST%</th></tr></thead>
+      <tbody>${data.map(p=>`<tr>
+        <td>#${p.id}</td>
+        <td style="font-weight:600;color:#f8fafc;">${p.name}</td>
+        <td><span class="badge badge-blue">${p.category||'—'}</span></td>
+        <td style="font-family:monospace;color:#94a3b8;">${p.barcode||'—'}</td>
+        <td>${rupee(p.mrp)}</td>
+        <td style="color:#4ade80;font-weight:700;">${rupee(p.selling_price)}</td>
+        <td style="color:#94a3b8;">${rupee(p.cost_price)}</td>
+        <td style="color:${p.stock_qty<=p.reorder_level?'#f87171':'#4ade80'};font-weight:700;">${p.stock_qty} ${p.unit||'Pcs'}</td>
+        <td>${p.reorder_level||0}</td>
+        <td>${p.gst_rate||0}%</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) { el.innerHTML=`<div class="error">Error loading products: ${e.message}</div>`; }
+}
+
+// ── Bills ─────────────────────────────────────────
+async function loadBills() {
+  const el = document.getElementById('tbl-bills');
+  const stats = document.getElementById('stats-bills');
+  try {
+    const data = await api('/api/pos/bills?limit=50');
+    const total = data.reduce((s,b)=>s+(b.grand_total||0),0);
+    const paid = data.filter(b=>b.payment_status==='paid'||b.status==='paid'||b.status==='completed').length;
+    stats.innerHTML = `
+      <div class="stat-card"><div class="num">${data.length}</div><div class="lbl">Total Bills</div></div>
+      <div class="stat-card"><div class="num">₹${total.toLocaleString('en-IN')}</div><div class="lbl">Total Revenue</div></div>
+      <div class="stat-card"><div class="num">${paid}</div><div class="lbl">Paid Bills</div></div>
+    `;
+    if (!data.length) { el.innerHTML='<div class="empty">No bills yet — create one in POS!</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>Bill ID</th><th>Customer</th><th>Items</th><th>Qty</th><th>Payment</th><th>Status</th><th>Total</th><th>Time</th></tr></thead>
+      <tbody>${data.map(b=>{
+        const items = (b.items||[]).map(i=>(i.product_name||'Item')+' ×'+(i.qty||0)).join(' + ');
+        const qty = (b.items||[]).reduce((s,i)=>s+(i.qty||0),0);
+        const time = new Date(b.created_at).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+        const isPaid = b.payment_status==='paid'||b.status==='paid'||b.status==='completed';
+        return `<tr>
+          <td style="font-weight:700;color:#38bdf8;">#BILL-${b.id}</td>
+          <td>${b.customer_name||'Walk-in'}</td>
+          <td style="font-size:12px;">${items||'—'}</td>
+          <td style="text-align:center;">${qty}</td>
+          <td>${payBadge(b.payment_mode)}</td>
+          <td><span class="badge ${isPaid?'badge-green':'badge-orange'}">${isPaid?'PAID':'PENDING'}</span></td>
+          <td style="font-weight:700;color:#4ade80;">₹${b.grand_total||0}</td>
+          <td style="color:#64748b;font-size:11px;">${time}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  } catch(e) { el.innerHTML=`<div class="error">Error loading bills: ${e.message}</div>`; }
+}
+
+// ── Stock Movements ───────────────────────────────
+async function loadStock() {
+  const el = document.getElementById('tbl-stock');
+  try {
+    const data = await api('/api/inventory/movements?limit=50');
+    if (!data.length) { el.innerHTML='<div class="empty">No stock movements yet</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Product</th><th>Type</th><th>Qty</th><th>Note</th><th>Date</th></tr></thead>
+      <tbody>${data.map(m=>{
+        const isIn = m.movement_type==='in'||m.movement_type==='stock_in';
+        return `<tr>
+          <td>#${m.id}</td>
+          <td style="font-weight:600;">${m.product_name||m.product_id}</td>
+          <td><span class="badge ${isIn?'badge-green':'badge-red'}">${(m.movement_type||'').toUpperCase()}</span></td>
+          <td style="color:${isIn?'#4ade80':'#f87171'};font-weight:700;">${isIn?'+':'−'}${Math.abs(m.qty||m.quantity||0)}</td>
+          <td style="color:#94a3b8;font-size:12px;">${m.notes||m.note||'—'}</td>
+          <td style="color:#64748b;font-size:11px;">${new Date(m.created_at||m.timestamp).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  } catch(e) { el.innerHTML=`<div class="error">Error: ${e.message}</div>`; }
+}
+
+// ── Dealers ───────────────────────────────────────
+async function loadDealers() {
+  const el = document.getElementById('tbl-dealers');
+  try {
+    const data = await api('/api/dealers/?limit=50');
+    if (!data.length) { el.innerHTML='<div class="empty">No dealers yet</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Name</th><th>Company</th><th>Phone</th><th>City</th><th>Outstanding</th><th>Status</th></tr></thead>
+      <tbody>${data.map(d=>`<tr>
+        <td>#${d.id}</td>
+        <td style="font-weight:600;color:#f8fafc;">${d.name}</td>
+        <td>${d.company_name||'—'}</td>
+        <td style="font-family:monospace;">${d.phone||'—'}</td>
+        <td>${d.city||'—'}</td>
+        <td style="color:${(d.outstanding_amount||0)>0?'#f87171':'#4ade80'};font-weight:700;">₹${d.outstanding_amount||0}</td>
+        <td><span class="badge ${d.is_active?'badge-green':'badge-red'}">${d.is_active?'ACTIVE':'INACTIVE'}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) { el.innerHTML=`<div class="error">Error: ${e.message}</div>`; }
+}
+
+// ── Staff ─────────────────────────────────────────
+async function loadStaff() {
+  const el = document.getElementById('tbl-staff');
+  try {
+    const data = await api('/api/staff/?limit=50');
+    if (!data.length) { el.innerHTML='<div class="empty">No staff yet</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Phone</th><th>Salary</th><th>Joining</th><th>Status</th></tr></thead>
+      <tbody>${data.map(s=>`<tr>
+        <td>#${s.id}</td>
+        <td style="font-weight:600;color:#f8fafc;">${s.name}</td>
+        <td><span class="badge badge-purple">${s.role||'Staff'}</span></td>
+        <td style="font-family:monospace;">${s.phone||'—'}</td>
+        <td style="color:#4ade80;font-weight:700;">₹${s.monthly_salary||0}/mo</td>
+        <td style="color:#64748b;">${s.joining_date||'—'}</td>
+        <td><span class="badge ${s.is_active?'badge-green':'badge-red'}">${s.is_active?'ACTIVE':'INACTIVE'}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) { el.innerHTML=`<div class="error">Error: ${e.message}</div>`; }
+}
+
+// ── All Counts ────────────────────────────────────
+async function loadAllCounts() {
+  const el = document.getElementById('stats-all');
+  const endpoints = [
+    ['/api/products/?limit=200', 'Products', 'badge-blue'],
+    ['/api/pos/bills?limit=200', 'Bills', 'badge-green'],
+    ['/api/dealers/?limit=200', 'Dealers', 'badge-purple'],
+    ['/api/staff/?limit=200', 'Staff', 'badge-orange'],
+    ['/api/inventory/movements?limit=200', 'Stock Moves', 'badge-red'],
+    ['/api/purchase-orders/?limit=200', 'Purchase Orders', 'badge-blue'],
+  ];
+  const results = await Promise.allSettled(endpoints.map(([path])=>api(path)));
+  el.innerHTML = results.map((r,i)=>{
+    const count = r.status==='fulfilled' ? (Array.isArray(r.value)?r.value.length:'?') : 'ERR';
+    const [,label,badge] = endpoints[i];
+    const changed = prevCounts[label] !== undefined && prevCounts[label] !== count;
+    if (r.status==='fulfilled') prevCounts[label] = count;
+    return `<div class="stat-card" style="${changed?'border-color:#22c55e;':''}">
+      <div class="num" style="${changed?'color:#22c55e;':''}">${count}</div>
+      <div class="lbl">${label}${changed?' ↑':''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Tab switch ────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const names = ['products','bills','stock','dealers','staff','all'];
+    t.classList.toggle('active', names[i]===tab);
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  loadCurrentTab();
+}
+
+function loadCurrentTab() {
+  const map = {
+    products: loadProducts,
+    bills: loadBills,
+    stock: loadStock,
+    dealers: loadDealers,
+    staff: loadStaff,
+    all: loadAllCounts
+  };
+  if (map[currentTab]) map[currentTab]();
+}
+
+function refreshAll() {
+  loadCurrentTab();
+  document.getElementById('last-update').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+}
+
+function setRefreshInterval(ms) {
+  clearInterval(refreshTimer);
+  if (+ms > 0) refreshTimer = setInterval(refreshAll, +ms);
+}
+
+// Start
+refreshAll();
+setRefreshInterval(3000);
+</script>
+</body>
+</html>

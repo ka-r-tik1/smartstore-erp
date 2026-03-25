@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartStore — ERP Teacher 🎓</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f172a; color:#e2e8f0; font-family:'Segoe UI',sans-serif; min-height:100vh; }
+
+header {
+  background:linear-gradient(135deg,#1e3a5f,#0f172a);
+  border-bottom:2px solid #38bdf8;
+  padding:16px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+header h1 { font-size:18px; font-weight:800; color:#38bdf8; }
+header p { font-size:12px; color:#64748b; margin-top:2px; }
+
+.layout { display:flex; height:calc(100vh - 64px); }
+
+/* LEFT — Topics */
+.sidebar {
+  width:220px; min-width:220px;
+  background:#1e293b;
+  border-right:1px solid #334155;
+  overflow-y:auto;
+  padding:12px 8px;
+}
+.sidebar h3 { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#475569; padding:8px 10px 4px; }
+.topic-btn {
+  display:block; width:100%;
+  padding:10px 14px; margin:2px 0;
+  background:transparent; border:none; border-radius:8px;
+  color:#94a3b8; font-size:13px; font-weight:600;
+  cursor:pointer; text-align:left;
+  transition:all .2s;
+}
+.topic-btn:hover { background:#334155; color:#e2e8f0; }
+.topic-btn.active { background:linear-gradient(135deg,#1d4ed8,#0ea5e9); color:#fff; }
+
+/* CENTER — Content */
+.main { flex:1; overflow-y:auto; padding:24px; }
+
+.lesson {
+  display:none;
+  animation:fadeIn .3s ease;
+}
+.lesson.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.lesson h2 { font-size:20px; font-weight:800; color:#38bdf8; margin-bottom:6px; }
+.lesson .subtitle { color:#64748b; font-size:13px; margin-bottom:20px; }
+
+.step-card {
+  background:#1e293b;
+  border:1px solid #334155;
+  border-radius:12px;
+  padding:18px 20px;
+  margin-bottom:14px;
+  position:relative;
+  transition:border-color .2s;
+}
+.step-card:hover { border-color:#38bdf8; }
+.step-num {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,#1d4ed8,#0ea5e9);
+  font-size:13px; font-weight:800; color:#fff;
+  margin-bottom:10px;
+}
+.step-card h3 { font-size:14px; font-weight:700; color:#f8fafc; margin-bottom:6px; }
+.step-card p { font-size:13px; color:#94a3b8; line-height:1.6; }
+.step-card .screen-tag {
+  display:inline-block; background:#0f172a; border:1px solid #334155;
+  padding:4px 10px; border-radius:6px; font-size:11px; color:#38bdf8;
+  font-weight:700; margin-top:8px;
+}
+.step-card .action {
+  background:#0f172a; border-left:3px solid #38bdf8;
+  padding:10px 14px; border-radius:0 8px 8px 0;
+  margin-top:10px; font-size:12px; color:#cbd5e1;
+  font-family:monospace; line-height:1.8;
+}
+
+.flow-box {
+  background:#0f172a; border:1px solid #334155; border-radius:10px;
+  padding:16px 20px; margin:14px 0;
+  font-family:monospace; font-size:13px; line-height:2;
+  color:#94a3b8;
+}
+.flow-box .hl { color:#4ade80; font-weight:700; }
+.flow-box .warn { color:#fb923c; }
+.flow-box .blue { color:#38bdf8; }
+
+.tip {
+  background:#1a2e1a; border:1px solid #166534; border-radius:10px;
+  padding:12px 16px; margin:14px 0;
+  font-size:13px; color:#86efac; line-height:1.6;
+}
+.tip::before { content:'💡 Tip: '; font-weight:700; }
+
+.warn-box {
+  background:#2d1a0e; border:1px solid #92400e; border-radius:10px;
+  padding:12px 16px; margin:14px 0;
+  font-size:13px; color:#fcd34d; line-height:1.6;
+}
+
+/* DB Live panel */
+.db-panel {
+  background:#1e293b; border:1px solid #334155; border-radius:12px;
+  padding:16px; margin-top:16px;
+}
+.db-panel h4 { font-size:12px; color:#38bdf8; font-weight:700; margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px; }
+table { width:100%; border-collapse:collapse; }
+th { font-size:10px; text-transform:uppercase; color:#475569; padding:6px 10px; text-align:left; border-bottom:1px solid #334155; }
+td { font-size:12px; color:#cbd5e1; padding:8px 10px; border-bottom:1px solid #0f172a; }
+tr:last-child td { border-bottom:none; }
+.badge { padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+.g { background:#dcfce7; color:#166534; }
+.b { background:#dbeafe; color:#1d4ed8; }
+.o { background:#fef3c7; color:#92400e; }
+.r { background:#fee2e2; color:#991b1b; }
+
+/* RIGHT — Q&A */
+.qa-panel {
+  width:300px; min-width:300px;
+  background:#1e293b;
+  border-left:1px solid #334155;
+  display:flex; flex-direction:column;
+}
+.qa-panel h3 { font-size:13px; font-weight:700; color:#f8fafc; padding:16px; border-bottom:1px solid #334155; }
+.qa-list { flex:1; overflow-y:auto; padding:12px; }
+.q-btn {
+  display:block; width:100%;
+  background:#0f172a; border:1px solid #334155; border-radius:8px;
+  color:#94a3b8; font-size:12px; padding:10px 12px;
+  cursor:pointer; text-align:left; margin-bottom:8px;
+  transition:all .2s; line-height:1.4;
+}
+.q-btn:hover { border-color:#38bdf8; color:#e2e8f0; background:#1e293b; }
+.q-btn.asked { border-color:#22c55e; color:#4ade80; }
+
+.answer-box {
+  background:#0f172a; border-top:1px solid #334155;
+  padding:14px; font-size:12px; color:#cbd5e1;
+  line-height:1.7; min-height:80px; display:none;
+}
+.answer-box.show { display:block; animation:fadeIn .3s ease; }
+.answer-box strong { color:#38bdf8; display:block; margin-bottom:6px; font-size:13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🎓 SmartStore ERP — Live Teacher</h1>
+    <p>Topic chunno → Steps padho → Question puchho</p>
+  </div>
+  <div style="font-size:12px;color:#64748b;" id="live-status">🔄 Loading...</div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h3>Topics</h3>
+    <button class="topic-btn active" onclick="showLesson('overview')">🏠 ERP Overview</button>
+    <button class="topic-btn" onclick="showLesson('product-add')">📦 Product Add</button>
+    <button class="topic-btn" onclick="showLesson('stock-in')">📥 Stock IN (Maal aaya)</button>
+    <button class="topic-btn" onclick="showLesson('pos')">🛒 POS — Bechna</button>
+    <button class="topic-btn" onclick="showLesson('barcode')">🔲 Barcode kya hota hai</button>
+    <button class="topic-btn" onclick="showLesson('db-live')">🗄️ DB Live Dekho</button>
+    <h3 style="margin-top:16px;">Flow</h3>
+    <button class="topic-btn" onclick="showLesson('full-flow')">🔄 Pura Flow</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- ERP Overview -->
+    <div class="lesson active" id="lesson-overview">
+      <h2>🏠 SmartStore ERP — Kya hai ye?</h2>
+      <p class="subtitle">Teri shop ka digital brain — sab kuch ek jagah</p>
+
+      <div class="flow-box">
+        <span class="blue">Maal aaya</span> → Product Add → Stock IN<br>
+        <span class="hl">Customer aaya</span> → POS Scan → Bill bana → Stock ghata<br>
+        <span class="warn">Paise aaye</span> → Payment record → Ledger update<br>
+        📊 Dashboard → Sab kuch ek nazar mein
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Products — Teri shop ka catalog</h3>
+        <p>Har product ek baar add karo — name, barcode, price, GST. Phir hamesha ready.</p>
+        <div class="screen-tag">📦 Products Screen</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Inventory — Maal ka hisaab</h3>
+        <p>Supplier se maal aaya → Stock IN karo. Stock khud update ho jaata hai.</p>
+        <div class="screen-tag">📥 Inventory Screen</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>POS — Bechna</h3>
+        <p>Barcode scan → cart → checkout. Bill bana, stock ghata, payment record.</p>
+        <div class="screen-tag">🛒 POS Screen</div>
+      </div>
+
+      <div class="tip">Pehle product add karo, phir stock in karo, phir becho. Yahi ek hi rule hai.</div>
+    </div>
+
+    <!-- Product Add -->
+    <div class="lesson" id="lesson-product-add">
+      <h2>📦 Product Add karna</h2>
+      <p class="subtitle">Naya product pehli baar dukan pe aaya → system mein daalo</p>
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Products screen kholo</h3>
+        <p>Left menu → Products ya upar navigation se Products pe click karo.</p>
+        <div class="screen-tag">📦 Products Screen</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>+ Add Product button dabaao</h3>
+        <p>Form khulega — yeh fields bharo:</p>
+        <div class="action">
+          Name:     Amul Butter 500g<br>
+          Barcode:  8901030868725  ← packet ke peeche hota hai<br>
+          Category: Dairy<br>
+          MRP:      ₹60<br>
+          Selling:  ₹55<br>
+          Cost:     ₹48<br>
+          GST:      12%<br>
+          Unit:     Pcs
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Save karo</h3>
+        <p>Product DB mein save ho jaayega. Stock abhi 0 hoga — Stock IN se badhega.</p>
+      </div>
+
+      <div class="warn-box">⚠️ Barcode unique hona chahiye. Ek barcode = ek product. Galat barcode daala toh POS scan kaam nahi karega.</div>
+
+      <div class="tip">Barcode product ke packet ke peeche hota hai — black lines wala. Scan karo ya manually type karo.</div>
+
+      <div class="db-panel">
+        <h4>📊 Abhi DB mein Products</h4>
+        <div id="products-live">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Stock IN -->
+    <div class="lesson" id="lesson-stock-in">
+      <h2>📥 Stock IN — Maal aaya</h2>
+      <p class="subtitle">Supplier ne Amul Butter 5 boxes diye → system ko batao</p>
+
+      <div class="warn-box">⚠️ Pehle product add hona chahiye. Agar Amul Butter products mein nahi hai toh pehle wahan add karo.</div>
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Inventory screen kholo</h3>
+        <p>Left menu → Inventory → Stock In section dhundho.</p>
+        <div class="screen-tag">📥 Inventory Screen</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Product select karo</h3>
+        <p>Barcode scan karo ya naam type karo → Amul Butter 500g select hoga.</p>
+        <div class="action">
+          Product: Amul Butter 500g ✅<br>
+          Qty:     5<br>
+          Batch:   optional<br>
+          Notes:   "Supplier delivery 24 March"
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Save karo</h3>
+        <p>Stock automatically update ho jaata hai:</p>
+        <div class="flow-box">
+          Pehle stock: <span class="warn">0</span><br>
+          Stock IN:    <span class="hl">+5</span><br>
+          Ab stock:    <span class="hl">5</span> ✅
+        </div>
+      </div>
+
+      <div class="tip">Stock IN karne ke baad db-live.html kholo → Products tab → stock_qty mein 5 dikhega.</div>
+    </div>
+
+    <!-- POS -->
+    <div class="lesson" id="lesson-pos">
+      <h2>🛒 POS — Customer ko Bechna</h2>
+      <p class="subtitle">Customer aaya, Amul Butter lena hai — 2 minute mein bill bana</p>
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>POS screen kholo</h3>
+        <p>Left menu → POS. Barcode search box dikhega.</p>
+        <div class="screen-tag">🛒 POS Screen</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Product dhundho</h3>
+        <p>Barcode scan karo ya naam type karo → dropdown mein product aayega → click karo.</p>
+        <div class="action">
+          Search: "amul" ya barcode scan<br>
+          → Amul Butter 500g — ₹55 (Stock: 5)<br>
+          → Click → Cart mein add ✅
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Checkout karo</h3>
+        <p>Payment mode chuno (Cash/UPI/Card) → Checkout & Print Bill.</p>
+        <div class="flow-box">
+          Cart: Amul Butter × 1 = <span class="hl">₹55</span><br>
+          Payment: <span class="blue">UPI</span><br>
+          → Bill bana: <span class="hl">#BILL-1</span><br>
+          → Stock: 5 → <span class="warn">4</span>
+        </div>
+      </div>
+
+      <div class="tip">Marathi mode mein "amul" type karo → "अमुल" dikhega field mein → lekin search sahi chalega!</div>
+    </div>
+
+    <!-- Barcode -->
+    <div class="lesson" id="lesson-barcode">
+      <h2>🔲 Barcode kya hota hai?</h2>
+      <p class="subtitle">Ek unique number jo har product ko identify karta hai</p>
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Barcode = Product ka Aadhar Card</h3>
+        <p>Jaise har insaan ka Aadhar number alag hota hai, waise hi har product ka barcode alag hota hai.</p>
+        <div class="action">
+          Amul Butter 500g  → 8901030868725<br>
+          Parle-G 800g      → 8901719110017<br>
+          Cadbury DM 40g    → 7622210449061
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Kahan milega barcode?</h3>
+        <p>Product ke packet ke peeche — black lines wala box. Scanner se scan karo ya manually type karo.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>ERP mein barcode kaise kaam karta hai?</h3>
+        <div class="flow-box">
+          POS mein scan karo barcode<br>
+          ↓<br>
+          System dhundhta hai: <span class="blue">barcode = 8901030868725</span><br>
+          ↓<br>
+          Milta hai: <span class="hl">Amul Butter 500g — ₹55</span><br>
+          ↓<br>
+          Cart mein add ✅
+        </div>
+      </div>
+
+      <div class="tip">Agar barcode nahi hai product pe → khud ek number do jaise "AMB001" — koi bhi unique code chalega.</div>
+    </div>
+
+    <!-- DB Live -->
+    <div class="lesson" id="lesson-db-live">
+      <h2>🗄️ DB Live — Real-time Records</h2>
+      <p class="subtitle">Abhi DB mein kya kya hai — live dekho</p>
+
+      <div class="db-panel">
+        <h4>📦 Products (abhi DB mein)</h4>
+        <div id="db-products">Loading...</div>
+      </div>
+
+      <div class="db-panel">
+        <h4>🧾 Recent Bills</h4>
+        <div id="db-bills">Loading...</div>
+      </div>
+
+      <div class="tip">ERP mein kuch bhi karo — yeh page 5 sec mein khud update hoga.</div>
+    </div>
+
+    <!-- Full Flow -->
+    <div class="lesson" id="lesson-full-flow">
+      <h2>🔄 Pura Flow — Ek nazar mein</h2>
+      <p class="subtitle">Supplier se customer tak — poora journey</p>
+
+      <div class="flow-box" style="line-height:2.2;font-size:13px;">
+        <span class="blue">📦 SUPPLIER NE MAAL DIYA</span><br>
+        &nbsp;&nbsp;↓<br>
+        <span class="hl">Step 1:</span> Products mein add karo (pehli baar)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Name + Barcode + Price + GST<br>
+        &nbsp;&nbsp;↓<br>
+        <span class="hl">Step 2:</span> Inventory → Stock IN<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Product select + Qty = 5 → Save<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ DB: stock_qty = 5 ✅<br>
+        &nbsp;&nbsp;↓<br>
+        <span class="warn">🛒 CUSTOMER AAYA</span><br>
+        &nbsp;&nbsp;↓<br>
+        <span class="hl">Step 3:</span> POS → Barcode scan<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Cart mein add<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Payment: Cash/UPI/Card<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Checkout<br>
+        &nbsp;&nbsp;↓<br>
+        <span class="hl">DB Update:</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;orders table → new bill ✅<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;products table → stock_qty - 1 ✅<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stock_movements → OUT record ✅<br>
+        &nbsp;&nbsp;↓<br>
+        <span class="blue">📊 DASHBOARD UPDATE</span> → sales, stock, payments sab live
+      </div>
+
+      <div class="tip">Yahi ek flow hai. Har cheez isi se connected hai.</div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Q&A PANEL -->
+  <div class="qa-panel">
+    <h3>❓ Questions Puchho</h3>
+    <div class="qa-list">
+      <button class="q-btn" onclick="showAnswer('q1')">Amul Butter add kaise karu?</button>
+      <button class="q-btn" onclick="showAnswer('q2')">Stock IN aur Product Add mein fark kya hai?</button>
+      <button class="q-btn" onclick="showAnswer('q3')">Barcode kahan se milega?</button>
+      <button class="q-btn" onclick="showAnswer('q4')">Bill kaise banega?</button>
+      <button class="q-btn" onclick="showAnswer('q5')">Stock ghata kab hota hai?</button>
+      <button class="q-btn" onclick="showAnswer('q6')">Abhi DB mein kitne products hain?</button>
+      <button class="q-btn" onclick="showAnswer('q7')">GST kya hota hai — simply?</button>
+      <button class="q-btn" onclick="showAnswer('q8')">Marathi mein search kaise karu?</button>
+      <button class="q-btn" onclick="showAnswer('q9')">Agar barcode nahi hai to?</button>
+      <button class="q-btn" onclick="showAnswer('q10')">POS aur Inventory screen mein fark?</button>
+    </div>
+    <div class="answer-box" id="answer-box"></div>
+  </div>
+
+</div><!-- /layout -->
+
+<script>
+const BASE = 'http://localhost:8000';
+let token = null;
+
+const answers = {
+  q1: { q:'Amul Butter add kaise karu?', a:'Products screen kholo → + Add Product → Name: "Amul Butter 500g", Barcode: packet ke peeche se lo, Price: 55, MRP: 60, GST: 12% → Save. Phir Inventory → Stock IN karo qty batao.' },
+  q2: { q:'Stock IN aur Product Add mein fark?', a:'Product Add = pehli baar system mein dakhil karna. Stock IN = maal aaya toh qty update karna. Jaise Aadhar card banwana (Product Add) vs bank mein paise daalna (Stock IN).' },
+  q3: { q:'Barcode kahan se milega?', a:'Product ke packet ke peeche — black lines wali jagah. Scanner se scan karo ya manually type karo. Online bhi milta hai: "Amul Butter 500g barcode" Google pe.' },
+  q4: { q:'Bill kaise banega?', a:'POS screen → barcode scan ya naam type → dropdown mein product click → cart mein add → Payment mode chuno (Cash/UPI/Card) → Checkout & Print Bill. Bill ready!' },
+  q5: { q:'Stock ghata kab hota hai?', a:'Jab POS se checkout karte ho tab automatically ghata hai. Tum kuch karne ki zaroorat nahi — system khud karta hai. Ek sell = stock -1.' },
+  q6: { q:'Abhi DB mein kitne products hain?', a:'Abhi sirf 3 products hain: Parle-G 800g, Britannia Marie Gold 250g, Cadbury Dairy Milk 40g. Amul Butter delete ho gaya tha — naya add karna hai.' },
+  q7: { q:'GST kya hota hai — simply?', a:'Government ka tax hai. Jaise Amul Butter pe 12% GST hai. ₹55 ka butter → ₹6.6 government ko jaata hai. ERP automatically calculate karta hai — tumhe bas % daalni hai.' },
+  q8: { q:'Marathi mein search kaise karu?', a:'MR button dabao → ab type karo "amul" → field mein "अमुल" dikhega → lekin search English mein hogi → DB se product milega → dropdown mein Marathi name dikhega.' },
+  q9: { q:'Agar barcode nahi hai to?', a:'Koi baat nahi! Khud ek code do jaise "AMB001" ya "SUGAR01". Koi bhi unique code chalega. Bas ek baar daalo — baad mein same code use karo.' },
+  q10: { q:'POS aur Inventory mein fark?', a:'Inventory = maal aana (supplier se). POS = maal jaana (customer ko). Inventory mein stock badhta hai, POS mein ghata hai.' }
+};
+
+function showAnswer(id) {
+  const a = answers[id];
+  if (!a) return;
+  document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('asked'));
+  event.target.classList.add('asked');
+  const box = document.getElementById('answer-box');
+  box.innerHTML = `<strong>Q: ${a.q}</strong>${a.a}`;
+  box.classList.add('show');
+}
+
+function showLesson(id) {
+  document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('lesson-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'db-live') loadDBLive();
+  if (id === 'product-add') loadProductsSmall();
+}
+
+async function getToken() {
+  if (token) return token;
+  const r = await fetch(BASE + '/api/auth/login', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:'admin', password:'admin123'})
+  });
+  token = (await r.json()).access_token;
+  return token;
+}
+
+async function api(path) {
+  const t = await getToken();
+  const r = await fetch(BASE + path, { headers:{'Authorization':'Bearer '+t} });
+  return r.json();
+}
+
+async function loadProductsSmall() {
+  const el = document.getElementById('products-live');
+  try {
+    const data = await api('/api/products/?limit=50');
+    if (!data.length) { el.innerHTML='<p style="color:#64748b;padding:12px;">No products yet</p>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>Name</th><th>Barcode</th><th>Price</th><th>Stock</th></tr></thead>
+      <tbody>${data.map(p=>`<tr>
+        <td style="font-weight:600;">${p.name}</td>
+        <td style="font-family:monospace;color:#94a3b8;">${p.barcode||'—'}</td>
+        <td style="color:#4ade80;">₹${p.selling_price}</td>
+        <td style="color:${p.stock_qty>0?'#4ade80':'#f87171'};font-weight:700;">${p.stock_qty}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) { el.innerHTML='<p style="color:#f87171;">Error loading</p>'; }
+}
+
+async function loadDBLive() {
+  // Products
+  const pe = document.getElementById('db-products');
+  const be = document.getElementById('db-bills');
+  try {
+    const products = await api('/api/products/?limit=50');
+    pe.innerHTML = !products.length ? '<p style="color:#64748b;padding:12px;">No products</p>' :
+      `<table><thead><tr><th>ID</th><th>Name</th><th>Stock</th><th>Price</th></tr></thead>
+      <tbody>${products.map(p=>`<tr>
+        <td style="color:#64748b;">#${p.id}</td>
+        <td style="font-weight:600;">${p.name}</td>
+        <td style="color:${p.stock_qty>0?'#4ade80':'#f87171'};font-weight:700;">${p.stock_qty} ${p.unit||'Pcs'}</td>
+        <td style="color:#4ade80;">₹${p.selling_price}</td>
+      </tr>`).join('')}</tbody></table>`;
+  } catch(e) { pe.innerHTML='<p style="color:#f87171;">Error</p>'; }
+
+  try {
+    const bills = await api('/api/pos/bills?limit=10');
+    be.innerHTML = !bills.length ? '<p style="color:#64748b;padding:12px;">No bills yet — POS se bill banao!</p>' :
+      `<table><thead><tr><th>Bill</th><th>Items</th><th>Total</th><th>Payment</th></tr></thead>
+      <tbody>${bills.map(b=>`<tr>
+        <td style="color:#38bdf8;font-weight:700;">#BILL-${b.id}</td>
+        <td style="font-size:11px;">${(b.items||[]).map(i=>(i.product_name||'?')+'×'+(i.qty||0)).join(', ')}</td>
+        <td style="color:#4ade80;font-weight:700;">₹${b.grand_total||0}</td>
+        <td><span class="badge b">${(b.payment_mode||'cash').toUpperCase()}</span></td>
+      </tr>`).join('')}</tbody></table>`;
+  } catch(e) { be.innerHTML='<p style="color:#f87171;">Error</p>'; }
+}
+
+// Update status
+async function updateStatus() {
+  try {
+    const t = await getToken();
+    const p = await api('/api/products/?limit=1');
+    document.getElementById('live-status').textContent = '🟢 Backend Connected';
+    document.getElementById('live-status').style.color = '#4ade80';
+  } catch(e) {
+    document.getElementById('live-status').textContent = '🔴 Backend Offline';
+    document.getElementById('live-status').style.color = '#f87171';
+  }
+}
+
+updateStatus();
+setInterval(updateStatus, 10000);
+</script>
+</body>
+</html>

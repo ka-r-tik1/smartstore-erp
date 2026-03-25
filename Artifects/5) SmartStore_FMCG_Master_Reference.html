@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartStore ERP — FMCG Master Reference</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f5f6fa;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+      color: #fff;
+      padding: 40px 48px 32px;
+      border-bottom: 4px solid #f97316;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: 30%;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(99,179,237,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .header-inner { position: relative; z-index: 1; }
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #f97316;
+      margin-bottom: 8px;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    header h1 span { color: #f97316; }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .header-meta span { display: flex; align-items: center; gap: 6px; }
+    .header-meta strong { color: #e2e8f0; }
+
+    /* ===== TABLE OF CONTENTS ===== */
+    .toc-bar {
+      background: #1e293b;
+      padding: 14px 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 20px;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid #334155;
+    }
+    .toc-bar a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .toc-bar a:hover { color: #f97316; background: rgba(249,115,22,0.1); }
+    .toc-label { color: #475569; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ===== MAIN CONTENT ===== */
+    main { max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px; }
+
+    /* ===== SECTION ===== */
+    .section {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+      margin-bottom: 32px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .section-header {
+      background: linear-gradient(90deg, #0f172a 0%, #1e3a5f 100%);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-num {
+      background: #f97316;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      color: #f8fafc;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .section-body { padding: 28px 28px 24px; }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .badge-done   { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-not-built { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-decided { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-ui-only { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .badge-partial { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+
+    /* ===== TABLES ===== */
+    .tbl-wrap { overflow-x: auto; margin: 12px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead tr { background: #0f172a; color: #f8fafc; }
+    thead th {
+      padding: 11px 14px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      border: none;
+    }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody tr:nth-child(odd)  { background: #ffffff; }
+    tbody tr:hover { background: #fff7ed; }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    .td-num { color: #94a3b8; font-weight: 700; font-size: 0.8rem; width: 42px; }
+    .td-name { font-weight: 600; color: #1e293b; }
+    .td-priority-high { color: #dc2626; font-weight: 700; }
+    .td-priority-med  { color: #d97706; font-weight: 700; }
+    .td-priority-low  { color: #65a30d; font-weight: 700; }
+    .td-tick { color: #16a34a; font-weight: 800; font-size: 1rem; }
+    .td-cross { color: #dc2626; font-weight: 800; font-size: 1rem; }
+    .td-partial { color: #d97706; font-weight: 800; font-size: 1rem; }
+
+    /* ===== INFO CARDS ===== */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 8px 0;
+    }
+    .info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .info-card .label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+    .info-card .value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .info-card .sub { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+
+    /* ===== MODULE LIST ===== */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .module-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #ffffff;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .module-card:hover { border-color: #f97316; background: #fff7ed; }
+    .module-num-circle {
+      background: #0f172a;
+      color: #f97316;
+      font-size: 0.78rem;
+      font-weight: 800;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .module-name { font-weight: 700; color: #0f172a; font-size: 0.92rem; margin-bottom: 2px; }
+    .module-desc { font-size: 0.82rem; color: #475569; line-height: 1.4; }
+
+    /* ===== MISSING MODULES ===== */
+    .gap-module-card {
+      border: 1px solid #fca5a5;
+      border-left: 4px solid #dc2626;
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #fff5f5;
+      margin-bottom: 10px;
+    }
+    .gap-module-card .gm-name { font-weight: 700; color: #991b1b; font-size: 0.92rem; }
+    .gap-module-card .gm-desc { font-size: 0.83rem; color: #475569; margin-top: 3px; }
+
+    /* ===== TECH STACK ===== */
+    .stack-flow {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 16px 0;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .flow-box {
+      display: inline-block;
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+    .flow-box.orange { background: #f97316; color: #fff; }
+    .flow-box.green  { background: #16a34a; color: #fff; }
+    .flow-arrow { color: #f97316; font-size: 1.3rem; margin: 0 10px; vertical-align: middle; font-weight: 700; }
+
+    /* ===== CALLOUT ===== */
+    .callout {
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 0.88rem;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .callout-orange { background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; }
+    .callout-blue   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; }
+    .callout-green  { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .callout strong { display: block; margin-bottom: 2px; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ===== PRIORITY LIST ===== */
+    .priority-list { list-style: none; counter-reset: priority-counter; }
+    .priority-list li {
+      counter-increment: priority-counter;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 11px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.88rem;
+    }
+    .priority-list li:last-child { border-bottom: none; }
+    .priority-list li::before {
+      content: counter(priority-counter);
+      background: #f97316;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.75rem;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .priority-list li .pl-main { font-weight: 600; color: #0f172a; }
+    .priority-list li .pl-sub  { font-size: 0.8rem; color: #64748b; margin-top: 1px; }
+
+    /* ===== GOOD KEEP LIST ===== */
+    .keep-list { list-style: none; }
+    .keep-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 9px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.88rem;
+    }
+    .keep-list li:last-child { border-bottom: none; }
+    .keep-list li::before {
+      content: '✓';
+      color: #16a34a;
+      font-weight: 800;
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .keep-list li .kl-main { font-weight: 600; color: #0f172a; }
+    .keep-list li .kl-sub  { font-size: 0.8rem; color: #64748b; }
+
+    /* ===== COMPETITOR SECTION ===== */
+    .comp-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .comp-card-header {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .comp-card-header .comp-name { font-weight: 700; font-size: 0.95rem; }
+    .comp-card-header .comp-type { font-size: 0.75rem; color: #94a3b8; }
+    .comp-card-body { padding: 14px 18px; font-size: 0.86rem; }
+    .comp-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+    .comp-label { font-weight: 700; color: #dc2626; min-width: 80px; font-size: 0.8rem; text-transform: uppercase; }
+    .comp-play-label { font-weight: 700; color: #16a34a; min-width: 80px; font-size: 0.8rem; text-transform: uppercase; }
+
+    /* ===== POSITIONING BANNER ===== */
+    .positioning-banner {
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #fff;
+      border-radius: 10px;
+      padding: 22px 28px;
+      margin: 16px 0;
+      text-align: center;
+    }
+    .positioning-banner .pos-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .positioning-banner .pos-text {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #f97316;
+      margin: 6px 0 0;
+      line-height: 1.3;
+    }
+
+    /* ===== RATING DISPLAY ===== */
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+    }
+    .rating-label { font-size: 0.82rem; font-weight: 600; color: #475569; min-width: 120px; }
+    .rating-track {
+      flex: 1;
+      background: #e2e8f0;
+      height: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .rating-fill { height: 100%; border-radius: 10px; }
+    .rating-fill-8 { width: 80%; background: linear-gradient(90deg, #16a34a, #4ade80); }
+    .rating-fill-2 { width: 20%; background: linear-gradient(90deg, #dc2626, #f87171); }
+    .rating-fill-5 { width: 50%; background: linear-gradient(90deg, #d97706, #fbbf24); }
+    .rating-num { font-size: 0.88rem; font-weight: 800; min-width: 40px; text-align: right; }
+    .rating-num-8 { color: #16a34a; }
+    .rating-num-2 { color: #dc2626; }
+    .rating-num-5 { color: #d97706; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #0f172a;
+      color: #475569;
+      text-align: center;
+      padding: 28px 48px;
+      font-size: 0.82rem;
+    }
+    footer strong { color: #94a3b8; }
+
+    /* ===== PRINT ===== */
+    @media print {
+      .toc-bar { display: none; }
+      body { background: #fff; }
+      .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+      header { background: #0f172a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <div class="header-eyebrow">Alphenta — Internal Reference Document</div>
+    <h1>SmartStore <span>ERP</span> — FMCG Master Reference</h1>
+    <div class="header-meta">
+      <span><strong>Product:</strong> SmartStore ERP</span>
+      <span><strong>Company:</strong> Alphenta</span>
+      <span><strong>Founder:</strong> Kartik</span>
+      <span><strong>Type:</strong> FMCG Retail + Wholesale ERP</span>
+      <span><strong>Market:</strong> India — Tier 2/3 cities</span>
+      <span><strong>Document Updated:</strong> March 2026</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== STICKY TOC ===== -->
+<nav class="toc-bar">
+  <span class="toc-label">Sections:</span>
+  <a href="#s1">1. Identity</a>
+  <a href="#s2">2. Status</a>
+  <a href="#s3">3. 18 Modules</a>
+  <a href="#s4">4. Missing Modules</a>
+  <a href="#s5">5. 19 Gaps</a>
+  <a href="#s6">6. Tech Stack</a>
+  <a href="#s7">7. Deployment</a>
+  <a href="#s8">8. Competitors</a>
+  <a href="#s9">9. Cost</a>
+  <a href="#s10">10. Build Order</a>
+  <a href="#s11">11. Keep As-Is</a>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- ===== SECTION 1: PRODUCT IDENTITY ===== -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Product Identity</h2>
+    </div>
+    <div class="section-body">
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="label">Product Name</div>
+          <div class="value">SmartStore ERP</div>
+          <div class="sub">By Alphenta</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Founder</div>
+          <div class="value">Kartik</div>
+          <div class="sub">Alphenta, India</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Product Type</div>
+          <div class="value">FMCG Retail + Wholesale ERP</div>
+          <div class="sub">NOT a manufacturing ERP</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Target Customer</div>
+          <div class="value">Under Rs 50 Crore revenue</div>
+          <div class="sub">Small malls, wholesale buyers, FMCG distributors</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Target Geography</div>
+          <div class="value">India — Tier 2/3 Cities</div>
+          <div class="sub">Maharashtra focus (Marathi language)</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Language Support</div>
+          <div class="value">Marathi + English</div>
+          <div class="sub">Bilingual UI — all 18 modules</div>
+        </div>
+      </div>
+
+      <div class="positioning-banner" style="margin-top: 20px;">
+        <div class="pos-label">Official Positioning Statement</div>
+        <div class="pos-text">"India's only FMCG ERP with Desktop + Cloud + Mobile + Offline"</div>
+      </div>
+
+      <div class="callout callout-blue" style="margin-top: 14px;">
+        <span class="callout-icon">&#9432;</span>
+        <div>
+          <strong>Critical Distinction</strong>
+          SmartStore is an FMCG <em>retail and wholesale</em> ERP. It is not built for manufacturers, garment makers, or production-heavy industries. The core workflows are: buy goods from supplier → store in inventory → sell to customers/dealers → manage GST, Udhaar, and cash flow.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 2: CURRENT STATUS ===== -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Current Status</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="label">Frontend / UI</div>
+          <div class="value">DONE <span class="badge badge-done">Done</span></div>
+          <div class="sub">7,034 lines of HTML/CSS/JS — single file</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Backend / API</div>
+          <div class="value">NOT BUILT <span class="badge badge-not-built">Not Built</span></div>
+          <div class="sub">FastAPI + PostgreSQL — decided, not yet coded</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Number of Modules</div>
+          <div class="value">18 modules</div>
+          <div class="sub">All built as UI screens</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Data Storage (current)</div>
+          <div class="value">localStorage only</div>
+          <div class="sub">Disappears on browser clear — no persistence</div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 12px; font-size: 0.95rem; color: #1e293b;">Product Readiness Ratings</h3>
+      <div class="rating-bar">
+        <span class="rating-label">UI / Design Quality</span>
+        <div class="rating-track"><div class="rating-fill rating-fill-8"></div></div>
+        <span class="rating-num rating-num-8">8 / 10</span>
+      </div>
+      <div class="rating-bar">
+        <span class="rating-label">Working Product</span>
+        <div class="rating-track"><div class="rating-fill rating-fill-2"></div></div>
+        <span class="rating-num rating-num-2">2 / 10</span>
+      </div>
+      <div class="rating-bar">
+        <span class="rating-label">FMCG Readiness</span>
+        <div class="rating-track"><div class="rating-fill rating-fill-5"></div></div>
+        <span class="rating-num rating-num-5">5 / 10</span>
+      </div>
+
+      <div class="callout callout-orange" style="margin-top: 18px;">
+        <span class="callout-icon">&#9888;</span>
+        <div>
+          <strong>Current Limitation</strong>
+          All data lives in the browser's localStorage. If a user clears their browser history or uses a different device, all their sales, inventory, and customer records disappear. Building the FastAPI + PostgreSQL backend is the single most critical next step.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 3: 18 MODULES ===== -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>18 Modules — All Built in UI <span class="badge badge-done" style="vertical-align:middle; margin-left:10px;">UI Done</span></h2>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-green" style="margin-bottom: 18px;">
+        <span class="callout-icon">&#10003;</span>
+        <div>All 18 modules below have complete UI screens in the current 7,034-line HTML file. They are functional on the front-end with localStorage data — but not yet connected to any real backend database.</div>
+      </div>
+      <div class="module-grid">
+        <div class="module-card">
+          <div class="module-num-circle">1</div>
+          <div>
+            <div class="module-name">Dashboard</div>
+            <div class="module-desc">KPI cards, today's sales totals, stock alerts, AI banner, Udhaar (credit) summary at a glance.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">2</div>
+          <div>
+            <div class="module-name">POS Billing</div>
+            <div class="module-desc">Barcode scan, cart management, GST calculation, UPI / cash / card payment options, receipt print.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">3</div>
+          <div>
+            <div class="module-name">Orders</div>
+            <div class="module-desc">Sales orders, pending deliveries tracking, complete order history with filter and search.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">4</div>
+          <div>
+            <div class="module-name">Purchase</div>
+            <div class="module-desc">Purchase orders, supplier management, GRN (Goods Receipt Note) — partial implementation.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">5</div>
+          <div>
+            <div class="module-name">Inventory</div>
+            <div class="module-desc">Stock levels, FIFO costing logic, reorder alerts, multi-location awareness (UI only).</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">6</div>
+          <div>
+            <div class="module-name">Expiry &amp; Wastage</div>
+            <div class="module-desc">Batch tracking, near-expiry alerts, wastage logging with reason codes — critical for FMCG.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">7</div>
+          <div>
+            <div class="module-name">Schemes &amp; Offers</div>
+            <div class="module-desc">AI-triggered clearance deals, discount engine — auto-suggests deals for slow-moving stock.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">8</div>
+          <div>
+            <div class="module-name">Dealers / Udhaar</div>
+            <div class="module-desc">Credit customers, outstanding balances, collection tracking — solves a real Indian retail pain point.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">9</div>
+          <div>
+            <div class="module-name">Payments</div>
+            <div class="module-desc">Payment ledger, UPI / cash / card reconciliation, daily cash summary.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">10</div>
+          <div>
+            <div class="module-name">Staff &amp; Payroll</div>
+            <div class="module-desc">Attendance tracking, salary slip generation, PT and ESI statutory deductions.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">11</div>
+          <div>
+            <div class="module-name">Data Hub</div>
+            <div class="module-desc">Integration connectors for Petpooja, Amazon, Flipkart, and HDFC Bank data feeds.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">12</div>
+          <div>
+            <div class="module-name">GST e-Invoice <span class="badge badge-ui-only">UI Only</span></div>
+            <div class="module-desc">B2B and B2C invoicing, GSTR-1/2 views, HSN codes, IRN generation — UI built, NIC API not yet connected.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">13</div>
+          <div>
+            <div class="module-name">Bank Reconciliation <span class="badge badge-ui-only">UI Only</span></div>
+            <div class="module-desc">Auto-matching bank statements to transactions — UI built, CSV parser backend not yet coded.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">14</div>
+          <div>
+            <div class="module-name">Fraud Detection</div>
+            <div class="module-desc">Anomaly detection, suspicious transaction flagging — novel feature for FMCG segment.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">15</div>
+          <div>
+            <div class="module-name">India Law Compliance</div>
+            <div class="module-desc">MSME registration reminders, DPDP 2025 data privacy, PT, PTEC, RCM compliance checklists.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">16</div>
+          <div>
+            <div class="module-name">WhatsApp AI Chatbot</div>
+            <div class="module-desc">50+ NLP intents, sends payment reminders and low-stock alerts, receives customer queries — currently one-way only.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">17</div>
+          <div>
+            <div class="module-name">AI Demand Forecast</div>
+            <div class="module-desc">Seasonal demand prediction, reorder quantity suggestions — currently hardcoded demo data.</div>
+          </div>
+        </div>
+        <div class="module-card">
+          <div class="module-num-circle">18</div>
+          <div>
+            <div class="module-name">Barcode Scanner</div>
+            <div class="module-desc">USB, Bluetooth, and Webcam barcode input, 4 scan modes — product lookup, add-to-cart, stock-in, stock-out.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4: MISSING MODULES ===== -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Modules Missing From UI <span class="badge badge-not-built" style="vertical-align:middle; margin-left:10px;">Not Built</span></h2>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-orange" style="margin-bottom: 18px;">
+        <span class="callout-icon">&#9888;</span>
+        <div>These 6 modules were identified from FMCG gap analysis. They have <strong>no screen at all</strong> in the current HTML file. They need to be designed and built from scratch — both UI and backend.</div>
+      </div>
+
+      <div class="gap-module-card">
+        <div class="gm-name">1 &mdash; Returns &amp; Exchange</div>
+        <div class="gm-desc">Customer returns, damaged goods processing, credit note generation. Without this, a shop can never handle a customer returning a product — a daily occurrence in FMCG retail.</div>
+      </div>
+      <div class="gap-module-card">
+        <div class="gm-name">2 &mdash; Supplier Rating</div>
+        <div class="gm-desc">On-time delivery scoring, price consistency tracking, quality feedback from PO/GRN data. Helps buyer know which suppliers to prefer when reordering.</div>
+      </div>
+      <div class="gap-module-card">
+        <div class="gm-name">3 &mdash; Customer Loyalty / CRM</div>
+        <div class="gm-desc">Loyalty points accumulation, membership tiers (Silver/Gold/Platinum), repeat customer tracking, purchase history analysis. Needed to compete with modern retail apps.</div>
+      </div>
+      <div class="gap-module-card">
+        <div class="gm-name">4 &mdash; GRN / Delivery Tracking</div>
+        <div class="gm-desc">Inward goods receipt with item-level verification, shortage claims for bulk deliveries. The Purchase module exists but GRN workflows are only partial — no dedicated screen for receiving goods against a PO.</div>
+      </div>
+      <div class="gap-module-card">
+        <div class="gm-name">5 &mdash; Print Invoice</div>
+        <div class="gm-desc">Thermal printer layout (58mm/80mm) for POS receipts, A4 GST invoice PDF for dealer billing. Currently there is no print screen or PDF generation — critical for any real business use.</div>
+      </div>
+      <div class="gap-module-card">
+        <div class="gm-name">6 &mdash; Multi-Location / Godown Manager</div>
+        <div class="gm-desc">2-3 godown inventory sync, location-wise stock transfer, per-location stock reports. Inventory module references multi-location but there is no dedicated godown management screen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 5: 19 GAPS ===== -->
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>The 19 Gaps + FastAPI Solutions</h2>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-blue" style="margin-bottom: 18px;">
+        <span class="callout-icon">&#9432;</span>
+        <div>These 19 gaps were identified through PDF analysis of the current UI prototype. Each has a defined solution using the chosen FastAPI + PostgreSQL stack. Priority: H = High (blocks all other work), M = Medium (blocks specific features), L = Low (enhancement).</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Gap Name</th>
+              <th>Priority</th>
+              <th>Solution (FastAPI + PostgreSQL)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-num">1</td>
+              <td class="td-name">No real backend</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>FastAPI Python server + PostgreSQL database — replaces localStorage entirely</td>
+            </tr>
+            <tr>
+              <td class="td-num">2</td>
+              <td class="td-name">No offline / PWA</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>Service Worker caches app shell + IndexedDB stores transactions locally when offline</td>
+            </tr>
+            <tr>
+              <td class="td-num">3</td>
+              <td class="td-name">No mobile app</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>PWA manifest — makes the web app installable on Android and PC, looks like a native app</td>
+            </tr>
+            <tr>
+              <td class="td-num">4</td>
+              <td class="td-name">No multi-location support</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>Warehouse and location tables in PostgreSQL; all stock_movement rows tagged with location_id</td>
+            </tr>
+            <tr>
+              <td class="td-num">5</td>
+              <td class="td-name">No role-based access</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>JWT token authentication with 3 roles: owner, cashier, staff — enforced at API level</td>
+            </tr>
+            <tr>
+              <td class="td-num">6</td>
+              <td class="td-name">No real payment gateway</td>
+              <td class="td-priority-med">MED</td>
+              <td>Razorpay Python SDK for UPI, card, and net banking. 2% fee per transaction.</td>
+            </tr>
+            <tr>
+              <td class="td-num">7</td>
+              <td class="td-name">No PO approval workflow</td>
+              <td class="td-priority-med">MED</td>
+              <td>Maker-checker logic in FastAPI — PO created by staff, approved by owner before sending to supplier</td>
+            </tr>
+            <tr>
+              <td class="td-num">8</td>
+              <td class="td-name">No GRN tracking</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>grn table + status tracking (ordered → dispatched → received → verified) in PostgreSQL</td>
+            </tr>
+            <tr>
+              <td class="td-num">9</td>
+              <td class="td-name">No FIFO costing</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>Python calculation on stock_movement table — FIFO cost of goods sold computed on each sale</td>
+            </tr>
+            <tr>
+              <td class="td-num">10</td>
+              <td class="td-name">No customer loyalty / CRM</td>
+              <td class="td-priority-med">MED</td>
+              <td>customer table with points column and tier field; loyalty rules table for configurable thresholds</td>
+            </tr>
+            <tr>
+              <td class="td-num">11</td>
+              <td class="td-name">No e-Invoice API</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>NIC portal IRN generation via Python HTTP requests — needed for B2B GST compliance above Rs 5 crore</td>
+            </tr>
+            <tr>
+              <td class="td-num">12</td>
+              <td class="td-name">No Tally export</td>
+              <td class="td-priority-med">MED</td>
+              <td>Python XML generator producing Tally-compatible ledger export file — critical for CA acceptance</td>
+            </tr>
+            <tr>
+              <td class="td-num">13</td>
+              <td class="td-name">No real bank reconciliation</td>
+              <td class="td-priority-med">MED</td>
+              <td>CSV parser + auto-matching algorithm compares bank statement rows to payment ledger entries</td>
+            </tr>
+            <tr>
+              <td class="td-num">14</td>
+              <td class="td-name">No print invoice</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>ReportLab Python library generates A4 GST PDF invoices; thermal receipt via ESC/POS commands</td>
+            </tr>
+            <tr>
+              <td class="td-num">15</td>
+              <td class="td-name">WhatsApp one-way only</td>
+              <td class="td-priority-med">MED</td>
+              <td>Gupshup or Twilio 2-way API — customers can reply to reminders and query balance via WhatsApp</td>
+            </tr>
+            <tr>
+              <td class="td-num">16</td>
+              <td class="td-name">AI chatbot hardcoded</td>
+              <td class="td-priority-med">MED</td>
+              <td>Replace hardcoded demo responses with real PostgreSQL queries behind each intent</td>
+            </tr>
+            <tr>
+              <td class="td-num">17</td>
+              <td class="td-name">No supplier rating</td>
+              <td class="td-priority-low">LOW</td>
+              <td>Scoring algorithm from PO/GRN data: delivery_days, price_variance, shortage_rate → supplier_score</td>
+            </tr>
+            <tr>
+              <td class="td-num">18</td>
+              <td class="td-name">No returns / exchange</td>
+              <td class="td-priority-high">HIGH</td>
+              <td>Credit note API + return_stock_entry table — reverses sale, restocks item, issues credit to customer</td>
+            </tr>
+            <tr>
+              <td class="td-num">19</td>
+              <td class="td-name">Branding / white-label</td>
+              <td class="td-priority-low">LOW</td>
+              <td>config table in DB — stores product_name, logo_url, primary_color. Switch name/branding anytime without code change</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 6: TECH STACK ===== -->
+  <div class="section" id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Tech Stack <span class="badge badge-decided" style="vertical-align:middle; margin-left:10px;">Decided</span></h2>
+    </div>
+    <div class="section-body">
+
+      <div class="stack-flow">
+        <span class="flow-box orange">HTML Frontend (18 Modules)</span>
+        <span class="flow-arrow">&#8594;</span>
+        <span class="flow-box">fetch() JSON API calls</span>
+        <span class="flow-arrow">&#8594;</span>
+        <span class="flow-box orange">FastAPI Backend (Python)</span>
+        <span class="flow-arrow">&#8594;</span>
+        <span class="flow-box green">PostgreSQL Database</span>
+      </div>
+
+      <div class="tbl-wrap" style="margin-top: 16px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Technology</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-name">API Server</td>
+              <td><strong>FastAPI (Python)</strong></td>
+              <td>Auto-generates Swagger docs at /docs; async; Python = same language for AI + integrations</td>
+            </tr>
+            <tr>
+              <td class="td-name">Database</td>
+              <td><strong>PostgreSQL</strong></td>
+              <td>DECIMAL type = no floating-point GST errors; ACID transactions; free and open source</td>
+            </tr>
+            <tr>
+              <td class="td-name">Authentication</td>
+              <td><strong>JWT Tokens</strong></td>
+              <td>3 roles: owner / cashier / staff — enforced at every API endpoint</td>
+            </tr>
+            <tr>
+              <td class="td-name">Offline / PWA</td>
+              <td><strong>Service Worker + IndexedDB</strong></td>
+              <td>Works without internet; Background Sync pushes queued transactions on reconnect</td>
+            </tr>
+            <tr>
+              <td class="td-name">File Storage</td>
+              <td><strong>Local Disk or S3</strong></td>
+              <td>Product images, invoice PDFs — local disk for small deployments, S3 for scale</td>
+            </tr>
+            <tr>
+              <td class="td-name">Real-time Updates</td>
+              <td><strong>WebSocket</strong></td>
+              <td>Live KPI dashboard — sales totals update in real time as POS bills are created</td>
+            </tr>
+            <tr>
+              <td class="td-name">Hosting</td>
+              <td><strong>Any VPS (Linux)</strong></td>
+              <td>DigitalOcean / Hetzner / Contabo — 2GB RAM is enough. Rs 500-800/month.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin: 22px 0 10px; font-size: 0.9rem; color: #1e293b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Why FastAPI + PostgreSQL Was Chosen</h3>
+      <ul style="padding-left: 20px; font-size: 0.88rem; line-height: 2;">
+        <li>Python = same language for backend, AI forecasting, and all integrations (Razorpay, Gupshup, Tally XML, NIC portal)</li>
+        <li>FastAPI auto-generates Swagger /docs — built-in API documentation for every endpoint</li>
+        <li>PostgreSQL DECIMAL type eliminates floating-point rounding errors in GST calculations</li>
+        <li>Python developers are 3x more available in India compared to Node.js developers</li>
+        <li>All required libraries exist: razorpay, gupshup-python, reportlab (PDF), lxml (Tally XML)</li>
+        <li>ERPNext was rejected: too heavy, too complex, Frappe framework locks you in, hard to customize</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 7: DEPLOYMENT ===== -->
+  <div class="section" id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Deployment Strategy <span class="badge badge-decided" style="vertical-align:middle; margin-left:10px;">Decided</span></h2>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-green" style="margin-bottom: 18px;">
+        <span class="callout-icon">&#10003;</span>
+        <div><strong>Decision: Cloud + Offline PWA — NOT a traditional desktop app</strong><br>
+        The app will be hosted on a Rs 500-800/month VPS, but will work offline using Service Workers and IndexedDB. It installs on PC and phone like a native app via PWA manifest.</div>
+      </div>
+
+      <h3 style="margin: 0 0 12px; font-size: 0.9rem; color: #1e293b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">How Offline Works</h3>
+      <ul style="padding-left: 20px; font-size: 0.88rem; line-height: 2; margin-bottom: 18px;">
+        <li><strong>Service Worker</strong> caches the entire app shell locally — app loads without internet</li>
+        <li><strong>IndexedDB</strong> stores all new transactions locally when WiFi is unavailable</li>
+        <li><strong>Background Sync API</strong> automatically pushes all queued transactions to the server when WiFi returns</li>
+        <li><strong>PWA Manifest</strong> makes the app installable on Windows PC and Android phone — looks and feels like a native application</li>
+        <li>Same Rs 500/month server — no extra cost for offline capability</li>
+      </ul>
+
+      <h3 style="margin: 20px 0 12px; font-size: 0.9rem; color: #1e293b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Competitive Advantage — SmartStore Ticks ALL 4 Boxes</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Competitor</th>
+              <th style="text-align:center;">Desktop App</th>
+              <th style="text-align:center;">Cloud / Web</th>
+              <th style="text-align:center;">Mobile App</th>
+              <th style="text-align:center;">Offline Mode</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-name">Tally Prime</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;">Desktop only</td>
+            </tr>
+            <tr>
+              <td class="td-name">Marg ERP</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;">Desktop only</td>
+            </tr>
+            <tr>
+              <td class="td-name">Busy Accounting</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;">Desktop only</td>
+            </tr>
+            <tr>
+              <td class="td-name">Zoho Inventory</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+            </tr>
+            <tr>
+              <td class="td-name">Vyapar</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-partial">&#8764; Partial</td>
+            </tr>
+            <tr>
+              <td class="td-name">PetPooja</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-cross">&#10007;</td>
+            </tr>
+            <tr style="background: #fff7ed !important;">
+              <td class="td-name" style="color: #f97316; font-weight: 800;">SmartStore (You)</td>
+              <td style="text-align:center;" class="td-tick">&#10003; (PWA)</td>
+              <td style="text-align:center;" class="td-tick">&#10003;</td>
+              <td style="text-align:center;" class="td-tick">&#10003; (PWA)</td>
+              <td style="text-align:center;" class="td-tick">&#10003; (PWA sync)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-orange" style="margin-top: 14px;">
+        <span class="callout-icon">&#9733;</span>
+        <div><strong>Key Claim</strong>SmartStore is the ONLY ERP in the Indian FMCG segment that simultaneously supports Desktop + Cloud + Mobile + Offline. This is the primary differentiator for sales conversations.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 8: COMPETITORS ===== -->
+  <div class="section" id="s8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>FMCG Competitor Intelligence</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="comp-card">
+        <div class="comp-card-header">
+          <span class="comp-name">Marg ERP</span>
+          <span class="comp-type">Direct FMCG Competitor — 900,000+ users</span>
+        </div>
+        <div class="comp-card-body">
+          <div class="comp-row"><span class="comp-label">Strengths:</span><span>900,000+ users in FMCG, pharma, textile, food &amp; beverage. Deep GST compliance. Widely used by Indian distributors.</span></div>
+          <div class="comp-row"><span class="comp-label">Weaknesses:</span><span>Legacy DOS-era codebase wrapped in Windows UI. Support described as "fraudulent" on Trustpilot. Pricing bait-and-switch: Rs 2,500 → Rs 5,500 AMC without warning. No AI, no mobile, no offline.</span></div>
+          <div class="comp-row"><span class="comp-play-label">Our Play:</span><span>"Same FMCG features. Modern app. Honest pricing. Support that actually responds."</span></div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-header">
+          <span class="comp-name">Tally Prime</span>
+          <span class="comp-type">Accounting Dominant — 70+ lakh licenses</span>
+        </div>
+        <div class="comp-card-body">
+          <div class="comp-row"><span class="comp-label">Strengths:</span><span>70+ lakh licenses. CAs and accountants default to recommending it. Deep accounting compliance. Widely trusted.</span></div>
+          <div class="comp-row"><span class="comp-label">Weaknesses:</span><span>Zero mobile, zero cloud, zero AI. Complex UI for non-accountants. No FMCG-specific workflows (expiry, wastage, dealer credit).</span></div>
+          <div class="comp-row"><span class="comp-play-label">Our Play:</span><span>"Don't replace Tally for accounting — integrate with it. Keep Tally for your CA, use SmartStore for everything else." Tally XML export is a critical feature to retain CA buy-in.</span></div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-header">
+          <span class="comp-name">Vyapar</span>
+          <span class="comp-type">Mobile Billing — 1 crore+ users</span>
+        </div>
+        <div class="comp-card-body">
+          <div class="comp-row"><span class="comp-label">Strengths:</span><span>1 crore+ users. Simple mobile billing. UPI-first. Excellent for very small businesses.</span></div>
+          <div class="comp-row"><span class="comp-label">Weaknesses:</span><span>Hits a ceiling at Rs 2-5 crore revenue. No real inventory management beyond basic stock count. No multi-location, no dealer credit (Udhaar), no expiry tracking.</span></div>
+          <div class="comp-row"><span class="comp-play-label">Our Play:</span><span>"You've outgrown Vyapar. Same simplicity, 10x the capability." Target Vyapar users who are growing.</span></div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-header">
+          <span class="comp-name">Zoho Inventory</span>
+          <span class="comp-type">Cloud ERP — Per-user pricing model</span>
+        </div>
+        <div class="comp-card-body">
+          <div class="comp-row"><span class="comp-label">Strengths:</span><span>Polished cloud product. Good integrations. Strong brand recognition.</span></div>
+          <div class="comp-row"><span class="comp-label">Weaknesses:</span><span>No offline capability — useless during internet outages. Per-user pricing kills scaling: 20 users = Rs 3 lakh per year. Not FMCG-specific (no expiry, wastage, dealer credit).</span></div>
+          <div class="comp-row"><span class="comp-play-label">Our Play:</span><span>Flat pricing model — no per-user charges. Works offline. Built specifically for FMCG not generic inventory.</span></div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-card-header">
+          <span class="comp-name">PetPooja</span>
+          <span class="comp-type">Restaurant POS — UX Benchmark (1,00,000+ outlets)</span>
+        </div>
+        <div class="comp-card-body">
+          <div class="comp-row"><span class="comp-label">Strengths:</span><span>Solved the hardest problem in Indian B2B software: getting a non-technical shop floor worker to use software daily. Color-coding, single-screen operations, offline-first, voice input, WhatsApp-native.</span></div>
+          <div class="comp-row"><span class="comp-label">UX Lessons:</span><span>Color-code everything for low-literacy workers. Keep key actions on ONE screen. Offline must work perfectly. WhatsApp is the preferred communication channel. Voice input helps non-typists.</span></div>
+          <div class="comp-row"><span class="comp-play-label">Our Goal:</span><span>SmartStore must be as simple as PetPooja for shop floor staff — especially cashiers and stock boys who are not tech-savvy.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 9: COST ===== -->
+  <div class="section" id="s9">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Cost Structure</h2>
+    </div>
+    <div class="section-body">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Cost</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-name">FastAPI + Python</td>
+              <td><strong>Free</strong></td>
+              <td>Open source — no license fees ever</td>
+            </tr>
+            <tr>
+              <td class="td-name">PostgreSQL</td>
+              <td><strong>Free</strong></td>
+              <td>Open source — no license fees ever</td>
+            </tr>
+            <tr>
+              <td class="td-name">VPS Server</td>
+              <td><strong>Rs 500–800 / month</strong></td>
+              <td>DigitalOcean / Hetzner / Contabo — 2GB RAM sufficient for initial deployment</td>
+            </tr>
+            <tr>
+              <td class="td-name">Domain Name</td>
+              <td><strong>Rs 500–1,000 / year</strong></td>
+              <td>GoDaddy / Namecheap</td>
+            </tr>
+            <tr>
+              <td class="td-name">SSL Certificate</td>
+              <td><strong>Free</strong></td>
+              <td>Let's Encrypt — auto-renewing HTTPS certificate</td>
+            </tr>
+            <tr>
+              <td class="td-name">Razorpay Gateway</td>
+              <td><strong>2% per transaction</strong></td>
+              <td>Standard Indian UPI / card gateway fees. No monthly fee, charged per use.</td>
+            </tr>
+            <tr>
+              <td class="td-name">WhatsApp API</td>
+              <td><strong>Rs 0.50–1 per message</strong></td>
+              <td>Gupshup Business API — only charged for messages actually sent</td>
+            </tr>
+            <tr>
+              <td class="td-name">Claude (backend development)</td>
+              <td><strong>Free</strong></td>
+              <td>Backend being built in this AI conversation</td>
+            </tr>
+            <tr style="background: #fff7ed !important;">
+              <td class="td-name" style="color: #f97316; font-weight: 800;">TOTAL MONTHLY</td>
+              <td style="color: #16a34a; font-weight: 800;">Rs 600–1,000 / month</td>
+              <td>vs ERPNext self-hosted: Rs 2,000–5,000/month (higher server needs + Frappe complexity)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-green" style="margin-top: 14px;">
+        <span class="callout-icon">&#9733;</span>
+        <div>This cost structure (Rs 600-1000/month) is significantly lower than any comparable ERP cloud solution. It can be passed on as a competitive pricing advantage to customers, or absorbed as near-zero infrastructure cost while charging Rs 3,000-8,000/month SaaS fees.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 10: BUILD ORDER ===== -->
+  <div class="section" id="s10">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <h2>Priority Build Order — What to Build Next</h2>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-orange" style="margin-bottom: 18px;">
+        <span class="callout-icon">&#9432;</span>
+        <div>Build in this exact sequence. Each item unblocks the next. Do not skip ahead — building CRM before the basic backend exists is wasted effort.</div>
+      </div>
+      <ul class="priority-list">
+        <li>
+          <div>
+            <div class="pl-main">FastAPI backend + PostgreSQL database schema</div>
+            <div class="pl-sub">Foundation for everything. All tables: products, inventory, sales, customers, suppliers, users. Without this, nothing else is persistent.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">JWT authentication — owner / cashier / staff roles</div>
+            <div class="pl-sub">Login screen + token-based access control. Every API endpoint protected by role. Owner can see everything; cashier can only access POS and payments.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Service Worker + PWA manifest — offline capability</div>
+            <div class="pl-sub">Caches app shell. IndexedDB for offline transactions. Background Sync for reconnection. This is the core competitive differentiator — must be built early.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Connect POS Billing screen to real APIs</div>
+            <div class="pl-sub">Product lookup by barcode → API. Add to cart → API. Complete sale → API. This is the most-used feature — highest priority to make real.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Connect Inventory to real APIs</div>
+            <div class="pl-sub">Stock levels, FIFO costing, reorder alerts all driven by live PostgreSQL data. Expiry and batch tracking connected to real data.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Connect Dealers / Udhaar to real APIs</div>
+            <div class="pl-sub">Customer credit limits, outstanding balances, collection history — all persisted in database. This is a major pain point for Indian retailers.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Tally XML export</div>
+            <div class="pl-sub">Python XML generator for Tally-compatible export. Critical for CA acceptance. Removes a major sales objection.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Razorpay UPI integration</div>
+            <div class="pl-sub">Real payment collection in POS. UPI QR generation, payment status webhook, auto-reconciliation.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Real GST e-Invoice via NIC portal</div>
+            <div class="pl-sub">IRN generation for B2B invoices above Rs 5 crore turnover. Required for compliance. Python HTTP calls to NIC sandbox first, then live.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">WhatsApp 2-way via Gupshup</div>
+            <div class="pl-sub">Customers can reply to payment reminders. Query their outstanding balance. Receive order confirmations. Turns the chatbot into a real customer service channel.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="pl-main">Build missing modules: Returns, Supplier Rating, CRM, Print Invoice, GRN, Godown Manager</div>
+            <div class="pl-sub">The 6 modules from Section 4 — design UI first, then build backend APIs for each.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 11: KEEP AS-IS ===== -->
+  <div class="section" id="s11">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <h2>What's Good — Keep As Is <span class="badge badge-done" style="vertical-align:middle; margin-left:10px;">Do Not Change</span></h2>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-green" style="margin-bottom: 18px;">
+        <span class="callout-icon">&#10003;</span>
+        <div>These elements of the current UI prototype are well-executed and should be carried forward unchanged into the backend-connected version. Do not redesign these.</div>
+      </div>
+      <ul class="keep-list">
+        <li>
+          <div>
+            <div class="kl-main">UI / UX Design — Glassmorphism visual language</div>
+            <div class="kl-sub">Professional, modern, rated 8/10. The glassmorphism cards, dark navy palette, and orange accents are distinctive and should be preserved exactly.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">Marathi + English bilingual support</div>
+            <div class="kl-sub">Excellent localization for Maharashtra market. No competitor offers this. Critical for adoption by Marathi-speaking shop owners and staff.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">GST structure — HSN codes, tax slabs, CGST/SGST</div>
+            <div class="kl-sub">The GST logic in the UI is correct. Correct slab mapping, CGST/SGST split, composite vs regular dealer logic is already implemented in UI layer.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">Dealer credit / Udhaar system concept</div>
+            <div class="kl-sub">Solves a deeply real problem in Indian retail. The concept, UI flow, and outstanding balance display should be kept — just backed by real database instead of localStorage.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">Schemes &amp; Offers engine — AI-triggered clearance deals</div>
+            <div class="kl-sub">Novel concept for FMCG. Auto-suggesting discounts on slow-moving or near-expiry stock is commercially valuable. Concept is sound.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">Barcode scanner — 4 modes, multi-device</div>
+            <div class="kl-sub">USB, Bluetooth, Webcam support. 4 operational modes. Good implementation that covers all hardware scenarios an Indian shop might have.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">India Law Compliance UI — MSME, DPDP 2025, PT, PTEC</div>
+            <div class="kl-sub">Awareness of Indian-specific compliance requirements. Rare in competitors. The UI checklists and reminder system concept should be kept.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">Fraud Detection concept</div>
+            <div class="kl-sub">Novel in the FMCG ERP segment. No competitor offers suspicious transaction flagging for small retail. Strong differentiation story for enterprise and chain store prospects.</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="kl-main">Data Hub integrations concept — Petpooja, Amazon, Flipkart, HDFC Bank</div>
+            <div class="kl-sub">Integration connectors for Indian commerce ecosystem. Positions SmartStore as a hub, not just a standalone ERP. Strong competitive moat if executed.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <strong>SmartStore ERP — FMCG Master Reference</strong> &nbsp;|&nbsp; Alphenta &nbsp;|&nbsp; Kartik, Founder &nbsp;|&nbsp; Internal document — March 2026<br>
+  <span style="margin-top: 6px; display: inline-block;">Target: Indian FMCG retailers and distributors under Rs 50 crore revenue — Tier 2/3 cities</span>
+</footer>
+
+</body>
+</html>
