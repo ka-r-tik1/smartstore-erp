@@ -95,7 +95,7 @@ async function loadDashboard() {
       document.getElementById('kpi-stock-alerts-delta').textContent = totalAlerts > 0 ? 'Auto PO Ready' : 'All OK ✅';
 
       // Critical Stock panel update
-      updateCriticalStock(ls.critical_stock || []);
+      updateCriticalStock([...(ls.out_of_stock || []), ...(ls.critical_stock || [])]);
     } else {
       document.getElementById('kpi-stock-alerts-delta').textContent = '⚠ Error';
     }
