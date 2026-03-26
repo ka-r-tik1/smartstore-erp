@@ -99,15 +99,16 @@ async function showSearchDropdown(results) {
 
   document.body.appendChild(dropdown);
 
-  for (const prod of results) {
-    const _dispName = (typeof _translateProdName === 'function') ? _translateProdName(prod.name) : prod.name;
+  // Fetch ALL batch data in parallel — much faster than sequential
+  const batchResults = await Promise.all(results.map(prod =>
+    apiCall('/api/inventory/selling-batches/' + prod.id)
+      .then(d => d.batches || [])
+      .catch(() => [])
+  ));
 
-    // Fetch batch-wise prices for this product
-    let batches = [];
-    try {
-      const batchData = await apiCall('/api/inventory/selling-batches/' + prod.id);
-      batches = batchData.batches || [];
-    } catch(e) { /* fallback to single row */ }
+  results.forEach((prod, pi) => {
+    const _dispName = (typeof _translateProdName === 'function') ? _translateProdName(prod.name) : prod.name;
+    const batches = batchResults[pi];
 
     if (batches.length <= 1) {
       // Single price — 1 row
@@ -131,8 +132,7 @@ async function showSearchDropdown(results) {
       batches.forEach((b, idx) => {
         const item = document.createElement('div');
         item.style.cssText = 'padding:10px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;';
-        const isLatest = idx === 0;
-        const latestBadge = isLatest ? '<span style="font-size:9px;background:#4ade80;color:#14532d;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;">LATEST</span>' : '';
+        const latestBadge = idx === 0 ? '<span style="font-size:9px;background:#4ade80;color:#14532d;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;">LATEST</span>' : '';
         item.innerHTML =
           '<div><b style="font-size:13px;color:#f8fafc;">' + _dispName + latestBadge + '</b><br>' +
           '<span style="font-size:11px;color:rgba(255,255,255,0.5);">' + (prod.barcode || '') + ' · ' + toMrNum(b.qty) + ' units</span></div>' +
@@ -149,7 +149,7 @@ async function showSearchDropdown(results) {
         dropdown.appendChild(item);
       });
     }
-  }
+  });
 
   // Close on click outside
   setTimeout(() => {
