@@ -91,12 +91,13 @@ async function showSearchDropdown(results) {
 
   const dropdown = document.createElement('div');
   dropdown.id = 'pos-search-dropdown';
-  dropdown.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.15);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.4);z-index:999;max-height:300px;overflow-y:auto;margin-top:6px;';
 
-  // Position early so user sees loading
-  const parent = inp.parentElement;
-  if (parent) parent.style.position = 'relative';
-  parent.appendChild(dropdown);
+  // Use fixed positioning so no parent overflow clips the dropdown
+  const rect = inp.getBoundingClientRect();
+  const maxH = Math.min(320, window.innerHeight - rect.bottom - 12);
+  dropdown.style.cssText = 'position:fixed;top:' + (rect.bottom + 6) + 'px;left:' + rect.left + 'px;width:' + rect.width + 'px;background:rgba(15,23,42,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.15);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.4);z-index:99999;max-height:' + maxH + 'px;overflow-y:auto;';
+
+  document.body.appendChild(dropdown);
 
   for (const prod of results) {
     const _dispName = (typeof _translateProdName === 'function') ? _translateProdName(prod.name) : prod.name;
