@@ -12,7 +12,8 @@ class StockInRequest(BaseModel):
     qty: int = Field(..., gt=0, description="Kitna aaya")
     movement_type: str = Field("purchase_in", description="purchase_in / return_in / adjustment")
     batch_number: Optional[str] = Field(None, description="Batch number (supplier se)")
-    purchase_price: Optional[float] = Field(None, ge=0, description="Is batch ka purchase price")
+    purchase_price: Optional[float] = Field(None, ge=0, description="Is batch ka purchase/cost price")
+    selling_price: Optional[float] = Field(None, ge=0, description="Is batch ka selling price")
     expiry_date: Optional[date] = Field(None, description="Expiry date (YYYY-MM-DD)")
     reference: Optional[str] = Field(None, description="Invoice/PO number")
     notes: Optional[str] = None

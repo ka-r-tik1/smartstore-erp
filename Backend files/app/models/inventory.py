@@ -34,6 +34,7 @@ class StockBatch(Base):
     batch_number = Column(String(50), nullable=True)         # Batch number from supplier
     qty = Column(Integer, default=0)                         # Is batch mein kitna bacha
     purchase_price = Column(Float, nullable=True)            # Is batch ka purchase price
+    selling_price = Column(Float, nullable=True)             # Is batch ka selling price
     expiry_date = Column(Date, nullable=True, index=True)    # Expiry date
     received_date = Column(Date, nullable=True)               # Kab aaya
     notes = Column(Text, nullable=True)

@@ -59,6 +59,20 @@ from app.models.stock_transfer import StockTransfer, StockTransferItem
 
 Base.metadata.create_all(bind=engine)
 
+# DB migration — naye columns add karo (safe, idempotent)
+def run_migrations():
+    try:
+        with engine.connect() as conn:
+            conn.execute(__import__('sqlalchemy').text(
+                "ALTER TABLE stock_batches ADD COLUMN selling_price FLOAT"
+            ))
+            conn.commit()
+            print("Migration: selling_price column added to stock_batches")
+    except Exception:
+        pass  # Column already exists — ignore
+
+run_migrations()
+
 @asynccontextmanager
 async def lifespan(app):
     db = SessionLocal()

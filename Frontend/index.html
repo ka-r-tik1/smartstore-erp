@@ -4891,9 +4891,14 @@
             <div id="scan-result" style="margin-top:12px;min-height:48px;"></div>
             <!-- Price Row — Stock In mode mein dikhega -->
             <div id="price-row" style="display:none;margin-top:10px;">
-              <div style="display:flex;gap:10px;align-items:center;">
-                <label style="font-size:13px;font-weight:600;" data-i18n="scan_purchase_price">Purchase Price:</label>
-                <input id="scan-price-input" type="number" step="0.01" min="0" placeholder="Enter price" data-i18n-ph="scan_enter_price" style="width:130px;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;">
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;" data-i18n="scan_selling_price">Selling Price:</label>
+                <input id="scan-price-input" type="number" step="0.01" min="0" placeholder="Enter selling price" data-i18n-ph="scan_enter_price" style="width:130px;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;" oninput="onSellingPriceInput(this.value)">
+                <!-- PP Box — sirf manual entry par dikhega -->
+                <div id="pp-box" style="display:none;align-items:center;gap:6px;">
+                  <label style="font-size:12px;font-weight:600;color:#6b7280;" data-i18n="scan_purchase_price">PP (Cost):</label>
+                  <input id="scan-pp-input" type="number" step="0.01" min="0" placeholder="Purchase price" style="width:110px;padding:7px 10px;border:1.5px solid #f59e0b;border-radius:8px;font-size:13px;background:#fffbeb;">
+                </div>
               </div>
               <div id="price-chips" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"></div>
             </div>
@@ -5666,8 +5671,14 @@ async function showScanResult(sku, prod) {
     if (priceRow) priceRow.style.display = 'block';
     var priceInp = document.getElementById('scan-price-input');
     var chips = document.getElementById('price-chips');
+    var ppBox = document.getElementById('pp-box');
 
-    // Product ID resolve karo — prod se, currentProduct se, ya PRODUCT_DB se fresh
+    // PP box reset
+    if (ppBox) ppBox.style.display = 'none';
+    var ppInp = document.getElementById('scan-pp-input');
+    if (ppInp) ppInp.value = '';
+
+    // Product ID resolve karo
     var prodId = prod.id || currentProduct.id;
     if (!prodId) {
       var freshProd = PRODUCT_DB[sku] || PRODUCT_DB[sku.toLowerCase()];
@@ -5679,13 +5690,21 @@ async function showScanResult(sku, prod) {
     } else {
       try {
         var history = await apiCall('/api/inventory/price-history/' + prodId);
-        // Race guard: agar naya call aa gaya toh purana ignore karo
         if (myCallId !== _scanCallId) { console.log('Stale price call ignored'); return; }
+
         var prices = (history.price_history && history.price_history.length > 0) ? history.price_history : [];
-        // Clear AFTER API returns (not before) — isse flash nahi hoga
+
+        // C1 FIX: Subtitle mein latest selling price update karo
+        if (history.current_selling_price) {
+          PRODUCT_DB[sku] = Object.assign(PRODUCT_DB[sku] || {}, { price: history.current_selling_price });
+          var subtitleEl = el ? el.querySelector('div[style*="color:#6b7280"]') : null;
+          if (subtitleEl) subtitleEl.textContent = 'SKU: ' + sku + ' · Stock: ' + (prod.stock || 0) + ' units · ₹' + history.current_selling_price;
+        }
+
+        // C4 FIX: Chips clear + re-render (saari unique prices hamesha)
         if (chips) chips.innerHTML = '';
         if (priceInp) priceInp.value = '';
-        // Render clickable price chips
+
         if (chips && prices.length > 0) {
           prices.forEach(function(h) {
             var chip = document.createElement('button');
@@ -5698,14 +5717,19 @@ async function showScanResult(sku, prod) {
               document.getElementById('scan-price-input').value = h.price;
               chips.querySelectorAll('button').forEach(function(b){ b.dataset.selected=''; b.style.background='#f0fdf4'; b.style.color='#047857'; });
               this.dataset.selected='1'; this.style.background='#10b981'; this.style.color='#fff';
+              // C5: Chip click → PP box HIDE karo
+              var ppBox = document.getElementById('pp-box');
+              if (ppBox) ppBox.style.display = 'none';
+              var ppInp = document.getElementById('scan-pp-input');
+              if (ppInp) ppInp.value = '';
             };
             chips.appendChild(chip);
           });
         }
-        // Auto-fill with latest price
+
+        // Auto-fill with latest price + first chip select
         if (prices.length > 0 && priceInp) {
           priceInp.value = prices[0].price;
-          // First chip auto-select
           if (chips && chips.children[0]) { chips.children[0].dataset.selected='1'; chips.children[0].style.background='#10b981'; chips.children[0].style.color='#fff'; }
         }
       } catch(e) {
@@ -5720,6 +5744,20 @@ async function showScanResult(sku, prod) {
   if (qr) qr.style.display = 'flex';
 }
 
+// C5: Manual price entry → PP box show karo
+function onSellingPriceInput(val) {
+  var ppBox = document.getElementById('pp-box');
+  if (!ppBox) return;
+  // Agar manually type kiya (chip se nahi) → PP box dikhao
+  if (val && parseFloat(val) > 0) {
+    ppBox.style.display = 'flex';
+  } else {
+    ppBox.style.display = 'none';
+    var ppInp = document.getElementById('scan-pp-input');
+    if (ppInp) ppInp.value = '';
+  }
+}
+
 function hideScanResult() {
   currentProduct = null;
   const el = document.getElementById('scan-result');
@@ -5730,6 +5768,10 @@ function hideScanResult() {
   if (priceRow) priceRow.style.display = 'none';
   var inp = document.getElementById('scan-price-input');
   if (inp) inp.value = '';
+  var ppBox = document.getElementById('pp-box');
+  if (ppBox) ppBox.style.display = 'none';
+  var ppInp = document.getElementById('scan-pp-input');
+  if (ppInp) ppInp.value = '';
   var chips = document.getElementById('price-chips');
   if (chips) chips.innerHTML = '';
 }
@@ -5767,19 +5809,32 @@ async function confirmScan() {
   // === API CALLS based on mode ===
   try {
     if (currentMode === 'stockin') {
-      // Purchase price read karo — seedha input box se
+      // Selling price read karo
       var priceInput = document.getElementById('scan-price-input');
-      var purchasePrice = parseFloat(priceInput ? priceInput.value : '') || null;
-      if (!purchasePrice) { toast('Purchase price daalo pehle!', 'error'); return; }
+      var sellingPrice = parseFloat(priceInput ? priceInput.value : '') || null;
+      if (!sellingPrice) { toast('Selling price daalo pehle!', 'error'); return; }
+
+      // Purchase price (PP box) — optional, sirf manual entry pe
+      var ppInput = document.getElementById('scan-pp-input');
+      var purchasePrice = parseFloat(ppInput ? ppInput.value : '') || null;
 
       // Stock IN → POST /api/inventory/stock-in
       await apiCall('/api/inventory/stock-in', 'POST', {
         product_id: currentProduct.id,
         qty: qty,
+        selling_price: sellingPrice,
         purchase_price: purchasePrice,
         notes: 'Barcode scanner stock in'
       });
-      toast('Stock IN: ' + currentProduct.name + ' +' + qty, 'success');
+
+      // C1 FIX: PRODUCT_DB cache update karo with new selling price
+      if (PRODUCT_DB[currentProduct.sku]) {
+        PRODUCT_DB[currentProduct.sku].price = sellingPrice;
+        PRODUCT_DB[currentProduct.sku].stock = (PRODUCT_DB[currentProduct.sku].stock || 0) + qty;
+      }
+      currentProduct.price = sellingPrice;
+
+      toast('Stock IN: ' + currentProduct.name + ' +' + qty + ' @ ₹' + sellingPrice, 'success');
 
     } else if (currentMode === 'stockout') {
       // Stock OUT → POST /api/inventory/stock-out
@@ -5983,20 +6038,81 @@ function posAddProduct(barcode) {
   setTimeout(() => { const el = document.getElementById('pos-scan-status'); if(el) el.textContent = ''; }, 2000);
 }
 
-function posAddByBarcode() {
+async function posAddByBarcode() {
   const inp = document.getElementById('pos-barcode-input');
   if (!inp) return;
   const val = inp.value.trim();
   if (!val) return;
   const prod = PRODUCT_DB[val] || PRODUCT_DB[val.toUpperCase()];
-  if (prod) {
-    posAddProduct(val);
-    inp.value = '';
-  } else {
+  if (!prod) {
     toast(`Barcode "${val}" not found. Add product in Barcode screen.`, 'warn');
     inp.value = '';
+    inp.focus();
+    return;
   }
+
+  inp.value = '';
   inp.focus();
+
+  // C2: Batch-wise selection — agar multiple selling prices hain to modal dikhao
+  if (prod.id) {
+    try {
+      var batchData = await apiCall('/api/inventory/selling-batches/' + prod.id);
+      var batches = batchData.batches || [];
+      if (batches.length > 1) {
+        // Multiple prices → modal dikhao
+        posBatchModal(val, prod, batches);
+        return;
+      }
+    } catch(e) { /* fallback to normal add */ }
+  }
+
+  posAddProduct(val);
+}
+
+// C2: POS Batch Modal — ek product ke multiple prices hain to choose karo
+function posBatchModal(barcode, prod, batches) {
+  var isMr = typeof currentLang !== 'undefined' && currentLang === 'mr';
+  var name = (isMr && prod.name_mr) ? prod.name_mr : prod.name;
+
+  var existing = document.getElementById('pos-batch-modal');
+  if (existing) existing.remove();
+
+  var html = '<div id="pos-batch-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
+    + '<div style="background:#fff;border-radius:14px;padding:24px;width:min(380px,92vw);box-shadow:0 20px 60px rgba(0,0,0,0.3);">'
+    + '<div style="font-weight:700;font-size:15px;margin-bottom:6px;">🛒 ' + escHtml(name) + '</div>'
+    + '<div style="font-size:12px;color:#6b7280;margin-bottom:16px;">' + (isMr ? 'कोणत्या किंमतीने विकायचे?' : 'Select selling price batch:') + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">';
+
+  batches.forEach(function(b) {
+    html += '<button onclick="posBatchSelect(\'' + escHtml(barcode) + '\',' + b.selling_price + ');document.getElementById(\'pos-batch-modal\').remove();" '
+      + 'style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:2px solid #e5e7eb;border-radius:10px;background:#f9fafb;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.15s;" '
+      + 'onmouseenter="this.style.borderColor=\'#10b981\';this.style.background=\'#f0fdf4\';" '
+      + 'onmouseleave="this.style.borderColor=\'#e5e7eb\';this.style.background=\'#f9fafb\';">'
+      + '<span>₹' + b.selling_price + '</span>'
+      + '<span style="font-size:12px;color:#6b7280;font-weight:400;">' + (isMr ? toMrNum(b.qty) + ' नग बाकी' : b.qty + ' units left') + '</span>'
+      + '</button>';
+  });
+
+  html += '</div>'
+    + '<button onclick="document.getElementById(\'pos-batch-modal\').remove();" style="margin-top:14px;width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#6b7280;cursor:pointer;font-size:13px;">'
+    + (isMr ? 'रद्द करा' : 'Cancel') + '</button>'
+    + '</div></div>';
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function posBatchSelect(barcode, sellingPrice) {
+  var prod = PRODUCT_DB[barcode] || PRODUCT_DB[barcode.toUpperCase()];
+  if (!prod) { toast('Product not found', 'warn'); return; }
+  var isMr = typeof currentLang !== 'undefined' && currentLang === 'mr';
+  var name = (isMr && prod.name_mr) ? prod.name_mr : prod.name;
+  var existing = posCart.find(function(i){ return i.barcode === barcode && i.price === sellingPrice; });
+  if (existing) { existing.qty++; }
+  else { posCart.push({ barcode: barcode, name: name, price: sellingPrice, hsn: prod.hsn || '—', gst: prod.gst || 0, qty: 1 }); }
+  posRenderCart();
+  document.getElementById('pos-scan-status').textContent = '✅ ' + name + ' @ ₹' + sellingPrice + ' added';
+  setTimeout(function(){ var el = document.getElementById('pos-scan-status'); if(el) el.textContent = ''; }, 2000);
 }
 
 function posOnInput(val) {
@@ -6529,12 +6645,13 @@ const i18n = {
     gst_taxable: 'Taxable Amount', gst_amount_words: 'Amount in words',
     gst_footer: 'This is a computer generated invoice. Subject to Pune jurisdiction.',
     // ── Barcode / Scanner ──
-    scan_purchase_price: 'Purchase Price:',
+    scan_purchase_price: 'PP (Cost):',
+    scan_selling_price: 'Selling Price:',
     scan_confirm: '✅ Confirm',
     scan_session_summary: 'Session Summary',
     scan_add_new_product: '➕ Add New Product',
     scan_category: 'Category',
-    scan_enter_price: 'Enter price',
+    scan_enter_price: 'Enter selling price',
     scan_qty_label: 'Qty:',
     // ── Category names ──
     cat_dairy: 'Dairy', cat_grocery: 'Grocery', cat_biscuits: 'Biscuits',
@@ -7017,12 +7134,13 @@ const i18n = {
     gst_taxable: 'करपात्र रक्कम', gst_amount_words: 'शब्दांत रक्कम',
     gst_footer: 'हे संगणक-निर्मित इनव्हॉइस आहे. पुणे न्यायक्षेत्राधीन.',
     // ── Barcode / Scanner ──
-    scan_purchase_price: 'खरेदी किंमत:',
+    scan_purchase_price: 'PP (खर्च किंमत):',
+    scan_selling_price: 'विक्री किंमत:',
     scan_confirm: '✅ पुष्टी करा',
     scan_session_summary: 'सत्र सारांश',
     scan_add_new_product: '➕ नवीन उत्पादन जोडा',
     scan_category: 'वर्ग',
-    scan_enter_price: 'किंमत टाका',
+    scan_enter_price: 'विक्री किंमत टाका',
     scan_qty_label: 'प्रमाण:',
     // ── Category names ──
     cat_dairy: 'दुग्ध', cat_grocery: 'किराणा', cat_biscuits: 'बिस्किटे',

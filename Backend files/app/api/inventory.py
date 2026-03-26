@@ -53,21 +53,24 @@ def stock_in(
     )
     db.add(movement)
 
-    # Batch banao — purchase_price ya expiry_date ya batch_number ho to
-    if data.purchase_price or data.batch_number or data.expiry_date:
+    # Batch banao — selling_price / purchase_price / expiry / batch_number mein se koi bhi ho to
+    if data.selling_price or data.purchase_price or data.batch_number or data.expiry_date:
         batch = StockBatch(
             product_id=data.product_id,
             batch_number=data.batch_number,
             qty=data.qty,
             purchase_price=data.purchase_price,
+            selling_price=data.selling_price,
             expiry_date=data.expiry_date,
             notes=data.notes
         )
         db.add(batch)
 
-    # Product ka purchase_price update karo (latest price)
+    # Product ka purchase_price + selling_price update karo (latest price)
     if data.purchase_price:
         product.purchase_price = data.purchase_price
+    if data.selling_price:
+        product.selling_price = data.selling_price
 
     db.commit()
     db.refresh(movement)
@@ -220,15 +223,19 @@ def price_history(
     if not product:
         raise HTTPException(status_code=404, detail="Product nahi mila")
 
+    # selling_price wale batches pehle, phir purchase_price wale (backward compat)
     batches = db.query(StockBatch).filter(
-        StockBatch.product_id == product_id,
-        StockBatch.purchase_price != None
+        StockBatch.product_id == product_id
     ).order_by(StockBatch.created_at.desc()).limit(20).all()
 
     seen = set()
     prices = []
     for b in batches:
-        p = round(b.purchase_price, 2)
+        # selling_price prefer karo, fallback purchase_price
+        raw = b.selling_price if b.selling_price else b.purchase_price
+        if raw is None:
+            continue
+        p = round(raw, 2)
         if p not in seen:
             seen.add(p)
             prices.append({
@@ -238,18 +245,61 @@ def price_history(
         if len(prices) >= 5:
             break
 
-    # Fallback: agar batch history nahi — purchase_price ya selling_price use karo
-    if not prices:
-        if product.purchase_price:
-            prices.append({"price": round(product.purchase_price, 2)})
-        if product.selling_price:
-            prices.append({"price": round(product.selling_price, 2)})
+    # Fallback: agar koi batch nahi — product.selling_price use karo
+    if not prices and product.selling_price:
+        prices.append({"price": round(product.selling_price, 2)})
 
     return {
         "product_id": product_id,
         "product_name": product.name,
-        "current_purchase_price": product.purchase_price,
+        "current_selling_price": product.selling_price,
         "price_history": prices
+    }
+
+
+# ──────────────────────────────────────
+# 6b. Selling Batches — POS ke liye (unique selling price + remaining qty)
+# ──────────────────────────────────────
+@router.get("/selling-batches/{product_id}")
+def selling_batches(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """POS ke liye: ek product ke alag-alag selling prices + remaining qty"""
+
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product nahi mila")
+
+    batches = db.query(StockBatch).filter(
+        StockBatch.product_id == product_id,
+        StockBatch.qty > 0
+    ).order_by(StockBatch.created_at.desc()).all()
+
+    # Group by selling_price
+    price_map = {}
+    for b in batches:
+        sp = b.selling_price if b.selling_price else b.purchase_price
+        if sp is None:
+            continue
+        sp = round(sp, 2)
+        if sp not in price_map:
+            price_map[sp] = {"selling_price": sp, "qty": 0, "batch_ids": []}
+        price_map[sp]["qty"] += b.qty
+        price_map[sp]["batch_ids"].append(b.id)
+
+    result = sorted(price_map.values(), key=lambda x: x["selling_price"])
+
+    # Fallback: agar koi batch nahi — product ka current selling_price + total stock
+    if not result and product.selling_price:
+        result = [{"selling_price": round(product.selling_price, 2), "qty": product.stock_qty, "batch_ids": []}]
+
+    return {
+        "product_id": product_id,
+        "product_name": product.name,
+        "total_stock": product.stock_qty,
+        "batches": result
     }
 
 
