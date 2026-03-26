@@ -6,11 +6,17 @@ from typing import Optional
 from datetime import datetime
 
 
+class BatchPrice(BaseModel):
+    price: float = Field(..., ge=0, description="Batch ka selling price")
+    qty: int = Field(..., gt=0, description="Is price pe kitne bache")
+
+
 # Cart mein ek item — product_id + qty bhejo
 class CartItem(BaseModel):
     product_id: int = Field(..., description="Product ka ID")
     qty: int = Field(..., gt=0, description="Kitne piece/kg chahiye")
-    selling_price: Optional[float] = Field(None, ge=0, description="Batch-selected selling price (optional — overrides product default)")
+    selling_price: Optional[float] = Field(None, ge=0, description="Display price (latest batch)")
+    batch_prices: Optional[list[BatchPrice]] = Field(None, description="Per-batch price breakdown for correct billing")
 
 
 # POS se bill banane ke liye — cart items + payment info

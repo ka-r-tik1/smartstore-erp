@@ -6110,9 +6110,14 @@ function posBatchSelect(barcode, sellingPrice) {
   if (!prod) { toast('Product not found', 'warn'); return; }
   var isMr = typeof currentLang !== 'undefined' && currentLang === 'mr';
   var name = (isMr && prod.name_mr) ? prod.name_mr : prod.name;
-  var existing = posCart.find(function(i){ return i.product_id === prod.id && i.price === sellingPrice; });
-  if (existing) { existing.qty++; }
-  else { posCart.push({ product_id: prod.id, barcode: barcode, name: name, price: sellingPrice, hsn: prod.hsn_code || '—', gst: prod.gst_rate || 0, qty: 1, stock: prod.stock_qty }); }
+  var existing = posCart.find(function(i){ return i.product_id === prod.id; });
+  if (existing) {
+    var batchEntry = existing.batches.find(function(b){ return b.price === sellingPrice; });
+    if (batchEntry) { batchEntry.qty++; } else { existing.batches.push({ price: sellingPrice, qty: 1 }); }
+    existing.qty++;
+  } else {
+    posCart.push({ product_id: prod.id, barcode: barcode, name: name, price: sellingPrice, hsn: prod.hsn_code || '—', gst: prod.gst_rate || 0, qty: 1, stock: prod.stock_qty, batches: [{ price: sellingPrice, qty: 1 }] });
+  }
   posRenderCart();
   var statusEl = document.getElementById('pos-scan-status');
   if (statusEl) statusEl.textContent = '✅ ' + name + ' @ ₹' + sellingPrice + ' added';
@@ -6160,9 +6165,12 @@ function posRenderCart() {
     const gstRate = item.gst || 0;
     const basePrice = item.price / (1 + gstRate / 100);
     const gstAmt = item.price - basePrice;
-    const lineTotal = item.price * item.qty;
-    const lineBase = basePrice * item.qty;
-    const lineGST = gstAmt * item.qty;
+    // Use batches sum for correct total (different batch prices handled correctly)
+    const lineTotal = item.batches
+      ? item.batches.reduce((s, b) => s + b.price * b.qty, 0)
+      : item.price * item.qty;
+    const lineBase = lineTotal / (1 + gstRate / 100);
+    const lineGST = lineTotal - lineBase;
     subtotal += lineBase;
     totalGST += lineGST;
     totalQty += item.qty;

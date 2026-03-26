@@ -81,9 +81,12 @@ def create_bill(
                 detail=f"'{product.name}' ka stock sirf {product.stock_qty} hai, {item.qty} maanga"
             )
 
-        # Calculate amounts — use batch-selected price if sent, else product default
+        # Calculate amounts — use batch_prices breakdown if sent (most accurate)
         unit_price = item.selling_price if item.selling_price else product.selling_price
-        item_subtotal = unit_price * item.qty
+        if item.batch_prices:
+            item_subtotal = sum(bp.price * bp.qty for bp in item.batch_prices)
+        else:
+            item_subtotal = unit_price * item.qty
 
         # Scheme auto-apply — best discount dhundho (Phase 10)
         best_discount = 0.0

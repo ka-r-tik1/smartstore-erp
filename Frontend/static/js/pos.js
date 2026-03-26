@@ -163,7 +163,7 @@ async function showSearchDropdown(results) {
   }, 100);
 }
 
-// Add product to cart from API data
+// Add product to cart from API data — batch-price tracking
 function posAddProductFromAPI(prod) {
   const existing = posCart.find(i => i.product_id === prod.id);
   if (existing) {
@@ -171,7 +171,12 @@ function posAddProductFromAPI(prod) {
       toast('Stock limit! Only ' + toMrNum(prod.stock_qty) + ' available.', 'warn');
       return;
     }
+    // Track this batch price separately — keeps display price unchanged
+    const batchEntry = existing.batches.find(b => b.price === prod.selling_price);
+    if (batchEntry) { batchEntry.qty++; }
+    else { existing.batches.push({ price: prod.selling_price, qty: 1 }); }
     existing.qty++;
+    // Keep display price as is (user wants ₹26 to stay)
   } else {
     if (prod.stock_qty <= 0) {
       toast(prod.name + ' out of stock!', 'warn');
@@ -181,11 +186,12 @@ function posAddProductFromAPI(prod) {
       product_id: prod.id,
       barcode: prod.barcode || '',
       name: prod.name,
-      price: prod.selling_price,
+      price: prod.selling_price,       // display price
       hsn: prod.hsn_code || '—',
       gst: prod.gst_rate || 0,
       qty: 1,
-      stock: prod.stock_qty
+      stock: prod.stock_qty,
+      batches: [{ price: prod.selling_price, qty: 1 }]  // batch tracking
     });
   }
   posRenderCart();
@@ -322,11 +328,12 @@ window.posCheckout = async function() {
     return;
   }
 
-  // Build request body — include selling_price for batch-wise billing
+  // Build request body — send batch_prices for correct backend total
   const items = posCart.map(item => ({
     product_id: item.product_id,
     qty: item.qty,
-    selling_price: item.price  // batch-selected price
+    selling_price: item.price,
+    batch_prices: item.batches || [{ price: item.price, qty: item.qty }]
   }));
 
   // Get dealer_id from customer dropdown
