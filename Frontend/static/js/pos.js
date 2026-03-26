@@ -81,8 +81,8 @@ window.posOnInput = function(val) {
   }, 250);
 };
 
-// Search dropdown for multiple results
-function showSearchDropdown(results) {
+// Search dropdown for multiple results — batch-wise rows
+async function showSearchDropdown(results) {
   let existing = document.getElementById('pos-search-dropdown');
   if (existing) existing.remove();
 
@@ -91,28 +91,64 @@ function showSearchDropdown(results) {
 
   const dropdown = document.createElement('div');
   dropdown.id = 'pos-search-dropdown';
-  dropdown.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.15);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.4);z-index:999;max-height:240px;overflow-y:auto;margin-top:6px;';
+  dropdown.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.15);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.4);z-index:999;max-height:300px;overflow-y:auto;margin-top:6px;';
 
-  results.forEach(prod => {
-    const item = document.createElement('div');
-    item.style.cssText = 'padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;';
-    const _dispName = (typeof _translateProdName === 'function') ? _translateProdName(prod.name) : prod.name;
-    item.innerHTML = '<div><b style="font-size:13px;color:#f8fafc;">' + _dispName + '</b><br><span style="font-size:11px;color:rgba(255,255,255,0.5);">' + (prod.barcode || '') + ' · Stock: ' + toMrNum(prod.stock_qty) + '</span></div><div style="font-weight:700;color:#4ade80;">₹' + toMrNum(prod.selling_price) + '</div>';
-    item.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.1)'; };
-    item.onmouseout = function() { this.style.background = 'transparent'; };
-    item.onclick = function() {
-      posAddProductFromAPI(prod);
-      dropdown.remove();
-      inp.value = '';
-      inp.focus();
-    };
-    dropdown.appendChild(item);
-  });
-
-  // Position relative to input
+  // Position early so user sees loading
   const parent = inp.parentElement;
   if (parent) parent.style.position = 'relative';
   parent.appendChild(dropdown);
+
+  for (const prod of results) {
+    const _dispName = (typeof _translateProdName === 'function') ? _translateProdName(prod.name) : prod.name;
+
+    // Fetch batch-wise prices for this product
+    let batches = [];
+    try {
+      const batchData = await apiCall('/api/inventory/selling-batches/' + prod.id);
+      batches = batchData.batches || [];
+    } catch(e) { /* fallback to single row */ }
+
+    if (batches.length <= 1) {
+      // Single price — 1 row
+      const price = (batches.length === 1) ? batches[0].selling_price : prod.selling_price;
+      const qty   = (batches.length === 1) ? batches[0].qty : prod.stock_qty;
+      const item = document.createElement('div');
+      item.style.cssText = 'padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;';
+      item.innerHTML = '<div><b style="font-size:13px;color:#f8fafc;">' + _dispName + '</b><br><span style="font-size:11px;color:rgba(255,255,255,0.5);">' + (prod.barcode || '') + ' · ' + toMrNum(qty) + ' units</span></div><div style="font-weight:700;color:#4ade80;">₹' + toMrNum(price) + '</div>';
+      item.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.1)'; };
+      item.onmouseout = function() { this.style.background = 'transparent'; };
+      const _prod = Object.assign({}, prod, { selling_price: price });
+      item.onclick = function() {
+        posAddProductFromAPI(_prod);
+        dropdown.remove();
+        inp.value = '';
+        inp.focus();
+      };
+      dropdown.appendChild(item);
+    } else {
+      // Multiple batches — one row per batch-price (latest first from API)
+      batches.forEach((b, idx) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'padding:10px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;';
+        const isLatest = idx === 0;
+        const latestBadge = isLatest ? '<span style="font-size:9px;background:#4ade80;color:#14532d;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;">LATEST</span>' : '';
+        item.innerHTML =
+          '<div><b style="font-size:13px;color:#f8fafc;">' + _dispName + latestBadge + '</b><br>' +
+          '<span style="font-size:11px;color:rgba(255,255,255,0.5);">' + (prod.barcode || '') + ' · ' + toMrNum(b.qty) + ' units</span></div>' +
+          '<div style="font-weight:700;color:#4ade80;font-size:15px;">₹' + toMrNum(b.selling_price) + '</div>';
+        item.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.1)'; };
+        item.onmouseout = function() { this.style.background = 'transparent'; };
+        const _prod = Object.assign({}, prod, { selling_price: b.selling_price });
+        item.onclick = function() {
+          posAddProductFromAPI(_prod);
+          dropdown.remove();
+          inp.value = '';
+          inp.focus();
+        };
+        dropdown.appendChild(item);
+      });
+    }
+  }
 
   // Close on click outside
   setTimeout(() => {

@@ -277,7 +277,7 @@ def selling_batches(
         StockBatch.qty > 0
     ).order_by(StockBatch.created_at.desc()).all()
 
-    # Group by selling_price
+    # Group by selling_price — track latest created_at per price group
     price_map = {}
     for b in batches:
         sp = b.selling_price if b.selling_price else b.purchase_price
@@ -285,11 +285,17 @@ def selling_batches(
             continue
         sp = round(sp, 2)
         if sp not in price_map:
-            price_map[sp] = {"selling_price": sp, "qty": 0, "batch_ids": []}
+            price_map[sp] = {"selling_price": sp, "qty": 0, "batch_ids": [], "latest_at": b.created_at}
         price_map[sp]["qty"] += b.qty
         price_map[sp]["batch_ids"].append(b.id)
+        if b.created_at and b.created_at > price_map[sp]["latest_at"]:
+            price_map[sp]["latest_at"] = b.created_at
 
-    result = sorted(price_map.values(), key=lambda x: x["selling_price"])
+    # Sort by latest batch first (newest price group on top)
+    result = sorted(price_map.values(), key=lambda x: x["latest_at"] or 0, reverse=True)
+    # Remove internal field before returning
+    for r in result:
+        r.pop("latest_at", None)
 
     # Fallback: agar koi batch nahi — product ka current selling_price + total stock
     if not result and product.selling_price:
