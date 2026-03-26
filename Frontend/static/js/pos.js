@@ -50,11 +50,12 @@ window.posOnInput = function(val) {
 
   if (!val) { status.textContent = ''; return; }
 
-  // First check cache (instant)
+  // First check cache — show status instantly but still show dropdown for batch selection
   if (productCache[val] || productCache[val.toUpperCase()]) {
     const prod = productCache[val] || productCache[val.toUpperCase()];
     status.textContent = '📦 ' + prod.name + ' — ₹' + toMrNum(prod.selling_price);
     status.style.color = 'var(--accent3)';
+    showSearchDropdown([prod]);  // Show batch dropdown even for cached products
     return;
   }
 
@@ -321,10 +322,11 @@ window.posCheckout = async function() {
     return;
   }
 
-  // Build request body
+  // Build request body — include selling_price for batch-wise billing
   const items = posCart.map(item => ({
     product_id: item.product_id,
-    qty: item.qty
+    qty: item.qty,
+    selling_price: item.price  // batch-selected price
   }));
 
   // Get dealer_id from customer dropdown

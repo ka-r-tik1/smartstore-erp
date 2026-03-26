@@ -105,8 +105,8 @@ async function loadDashboard() {
       const ex = expiry.value;
       const expiryCount = (ex.summary ? ex.summary.expiring_soon : 0) ||
                           (ex.expiring_this_week ? ex.expiring_this_week.length : 0) ||
-                          (ex.already_expired ? ex.already_expired.length : 0) +
-                          (ex.expiring_within_days ? ex.expiring_within_days.length : 0);
+                          ((ex.already_expired ? ex.already_expired.length : 0) +
+                          (ex.expiring_within_days ? ex.expiring_within_days.length : 0));
       document.getElementById('kpi-expiry-val').textContent = toMrNum(expiryCount);
       const _tExp = (typeof i18n !== 'undefined' && typeof currentLang !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : {};
       document.getElementById('kpi-expiry-delta').textContent = expiryCount > 0

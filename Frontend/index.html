@@ -6103,15 +6103,19 @@ function posBatchModal(barcode, prod, batches) {
 }
 
 function posBatchSelect(barcode, sellingPrice) {
-  var prod = PRODUCT_DB[barcode] || PRODUCT_DB[barcode.toUpperCase()];
+  // Use productCache (API cache) instead of old PRODUCT_DB (localStorage — removed)
+  var prod = (typeof productCache !== 'undefined')
+    ? (productCache[barcode] || productCache[barcode.toUpperCase()] || null)
+    : null;
   if (!prod) { toast('Product not found', 'warn'); return; }
   var isMr = typeof currentLang !== 'undefined' && currentLang === 'mr';
   var name = (isMr && prod.name_mr) ? prod.name_mr : prod.name;
-  var existing = posCart.find(function(i){ return i.barcode === barcode && i.price === sellingPrice; });
+  var existing = posCart.find(function(i){ return i.product_id === prod.id && i.price === sellingPrice; });
   if (existing) { existing.qty++; }
-  else { posCart.push({ barcode: barcode, name: name, price: sellingPrice, hsn: prod.hsn || '—', gst: prod.gst || 0, qty: 1 }); }
+  else { posCart.push({ product_id: prod.id, barcode: barcode, name: name, price: sellingPrice, hsn: prod.hsn_code || '—', gst: prod.gst_rate || 0, qty: 1, stock: prod.stock_qty }); }
   posRenderCart();
-  document.getElementById('pos-scan-status').textContent = '✅ ' + name + ' @ ₹' + sellingPrice + ' added';
+  var statusEl = document.getElementById('pos-scan-status');
+  if (statusEl) statusEl.textContent = '✅ ' + name + ' @ ₹' + sellingPrice + ' added';
   setTimeout(function(){ var el = document.getElementById('pos-scan-status'); if(el) el.textContent = ''; }, 2000);
 }
 

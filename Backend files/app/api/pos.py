@@ -81,8 +81,9 @@ def create_bill(
                 detail=f"'{product.name}' ka stock sirf {product.stock_qty} hai, {item.qty} maanga"
             )
 
-        # Calculate amounts
-        item_subtotal = product.selling_price * item.qty
+        # Calculate amounts — use batch-selected price if sent, else product default
+        unit_price = item.selling_price if item.selling_price else product.selling_price
+        item_subtotal = unit_price * item.qty
 
         # Scheme auto-apply — best discount dhundho (Phase 10)
         best_discount = 0.0
@@ -129,7 +130,7 @@ def create_bill(
             product_id=product.id,
             product_name=product.name,
             qty=item.qty,
-            unit_price=product.selling_price,
+            unit_price=unit_price,
             gst_rate=product.gst_rate,
             gst_amount=item_gst,
             total=item_total

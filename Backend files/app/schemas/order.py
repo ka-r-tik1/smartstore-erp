@@ -10,6 +10,7 @@ from datetime import datetime
 class CartItem(BaseModel):
     product_id: int = Field(..., description="Product ka ID")
     qty: int = Field(..., gt=0, description="Kitne piece/kg chahiye")
+    selling_price: Optional[float] = Field(None, ge=0, description="Batch-selected selling price (optional — overrides product default)")
 
 
 # POS se bill banane ke liye — cart items + payment info
