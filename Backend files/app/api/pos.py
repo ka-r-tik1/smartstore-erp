@@ -122,6 +122,8 @@ def create_bill(
                 best_discount = disc
                 best_scheme_name = scheme.name
 
+        # Cap: scheme discount cannot exceed item_subtotal (bill can't go negative)
+        best_discount = min(best_discount, item_subtotal)
         scheme_discount += best_discount
         if best_scheme_name:
             applied_schemes.append({"product": product.name, "scheme": best_scheme_name, "discount": best_discount})
@@ -167,7 +169,7 @@ def create_bill(
 
     # Grand total calculate karo (manual discount + scheme discount)
     total_discount = bill.discount + scheme_discount
-    grand_total = round(subtotal + total_gst - total_discount, 2)
+    grand_total = max(0.0, round(subtotal + total_gst - total_discount, 2))
 
     # Payment status
     payment_status = "pending" if bill.payment_mode == "udhaar" else "paid"
