@@ -147,16 +147,20 @@ def create_bill(
         # StockBatch bhi update karo (batch-wise deduction by selling_price)
         batch_price = item.selling_price if item.selling_price else product.selling_price
         remaining = item.qty
-        for batch in db.query(StockBatch).filter(
+        matched_batches = db.query(StockBatch).filter(
             StockBatch.product_id == product.id,
             StockBatch.selling_price == batch_price,
             StockBatch.qty > 0
-        ).order_by(StockBatch.created_at.asc()).all():
+        ).order_by(StockBatch.created_at.asc()).all()
+        print(f"[BATCH DEDUCT] product_id={product.id}, batch_price={batch_price}, found={len(matched_batches)} batches")
+        for batch in matched_batches:
             if remaining <= 0:
                 break
             deduct = min(batch.qty, remaining)
+            print(f"[BATCH DEDUCT] batch_id={batch.id}, old_qty={batch.qty}, deduct={deduct}")
             batch.qty -= deduct
             remaining -= deduct
+        db.flush()
 
         subtotal += item_subtotal
         total_gst += item_gst
