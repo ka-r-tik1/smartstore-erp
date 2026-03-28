@@ -5848,7 +5848,7 @@ async function confirmScan() {
     } else if (currentMode === 'sale') {
       // Sale → POST /api/pos/bill
       await apiCall('/api/pos/bill', 'POST', {
-        items: [{ product_id: currentProduct.id, qty: qty }],
+        items: [{ product_id: currentProduct.id, qty: qty, selling_price: currentProduct.price }],
         payment_mode: 'cash',
         discount: 0,
         notes: 'Barcode scanner sale'
