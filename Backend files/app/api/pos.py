@@ -16,6 +16,7 @@ from app.models.order import Order, OrderItem
 from app.models.dealer import Dealer
 from app.models.scheme import Scheme
 from app.models.user import User
+from app.models.inventory import StockBatch
 from app.schemas.order import POSBillCreate, OrderResponse
 
 router = APIRouter(prefix="/pos", tags=["POS - Billing"])
@@ -142,6 +143,20 @@ def create_bill(
 
         # Stock minus karo
         product.stock_qty -= item.qty
+
+        # StockBatch bhi update karo (batch-wise deduction by selling_price)
+        batch_price = item.selling_price if item.selling_price else product.selling_price
+        remaining = item.qty
+        for batch in db.query(StockBatch).filter(
+            StockBatch.product_id == product.id,
+            StockBatch.selling_price == batch_price,
+            StockBatch.qty > 0
+        ).order_by(StockBatch.created_at.asc()).all():
+            if remaining <= 0:
+                break
+            deduct = min(batch.qty, remaining)
+            batch.qty -= deduct
+            remaining -= deduct
 
         subtotal += item_subtotal
         total_gst += item_gst
