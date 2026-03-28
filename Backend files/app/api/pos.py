@@ -149,7 +149,7 @@ def create_bill(
         remaining = item.qty
         matched_batches = db.query(StockBatch).filter(
             StockBatch.product_id == product.id,
-            StockBatch.selling_price == batch_price,
+            StockBatch.selling_price.between(batch_price - 0.01, batch_price + 0.01),
             StockBatch.qty > 0
         ).order_by(StockBatch.created_at.asc()).all()
         print(f"[BATCH DEDUCT] product_id={product.id}, batch_price={batch_price}, found={len(matched_batches)} batches")
