@@ -6254,15 +6254,38 @@ function posUpdateCustomer(val) {
   if (lbl) lbl.textContent = gstinMap[val] || 'B2C Invoice';
 }
 
-function posCheckout() {
+async function posCheckout() {
   if (posCart.length === 0) { toast('Cart is empty! Add products first.', 'warn'); return; }
-  const billNo = '#BILL-' + posBillCounter++;
   const pm = { upi:'📲 UPI', cash:'💵 Cash', card:'💳 Card' }[posPaymentMethod] || 'UPI';
-  const totalEl = document.getElementById('pos-total');
-  const total = totalEl ? totalEl.textContent : '₹0.00';
-  toast(`${billNo} generated! ${total} collected via ${pm}. Bill sent to printer.`, 'success');
-  posCart = [];
-  posRenderCart();
+
+  // Build API payload from posCart
+  var items = posCart.map(function(item) {
+    return {
+      product_id: item.product_id,
+      qty: item.qty,
+      selling_price: item.price,
+      batch_prices: item.batches ? item.batches.map(function(b) { return { price: b.price, qty: b.qty }; }) : null
+    };
+  });
+
+  try {
+    var result = await apiCall('/api/pos/bill', 'POST', {
+      items: items,
+      payment_mode: posPaymentMethod,
+      discount: 0,
+      notes: 'POS checkout'
+    });
+    var billNo = result.invoice_number || ('#BILL-' + posBillCounter++);
+    const totalEl = document.getElementById('pos-total');
+    const total = totalEl ? totalEl.textContent : '₹0.00';
+    toast(billNo + ' generated! ' + total + ' collected via ' + pm + '. Bill sent to printer.', 'success');
+    posCart = [];
+    posRenderCart();
+    // Reload product DB for updated stock
+    if (typeof loadProductDBFromAPI === 'function') loadProductDBFromAPI();
+  } catch(err) {
+    toast('Bill error: ' + err.message, 'error');
+  }
 }
 
 // barcode/pos init — merged into consolidated dispatcher above
