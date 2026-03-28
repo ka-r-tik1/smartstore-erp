@@ -5867,7 +5867,7 @@ async function confirmScan() {
     time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
     mode: currentMode,
     sku: currentProduct.sku,
-    name: currentProduct.name,
+    name: currentProduct.name_mr || currentProduct.name,
     qty,
     price: logPrice,
     total: qty * logPrice
