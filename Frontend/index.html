@@ -5853,6 +5853,9 @@ async function confirmScan() {
         discount: 0,
         notes: 'Barcode scanner sale'
       });
+      if (PRODUCT_DB[currentProduct.sku]) {
+        PRODUCT_DB[currentProduct.sku].stock = Math.max(0, (PRODUCT_DB[currentProduct.sku].stock || 0) - qty);
+      }
       toast('Sale: ' + currentProduct.name + ' ×' + qty, 'success');
     }
   } catch(err) {
