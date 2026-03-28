@@ -6084,7 +6084,7 @@ function posBatchModal(barcode, prod, batches) {
     + '<div style="font-size:12px;color:#6b7280;margin-bottom:16px;">' + (isMr ? 'कोणत्या किंमतीने विकायचे?' : 'Select selling price batch:') + '</div>'
     + '<div style="display:flex;flex-direction:column;gap:10px;">';
 
-  batches.forEach(function(b) {
+  batches.filter(function(b){ return b.qty > 0; }).forEach(function(b) {
     html += '<button onclick="posBatchSelect(\'' + escHtml(barcode) + '\',' + b.selling_price + ');document.getElementById(\'pos-batch-modal\').remove();" '
       + 'style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:2px solid #e5e7eb;border-radius:10px;background:#f9fafb;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.15s;" '
       + 'onmouseenter="this.style.borderColor=\'#10b981\';this.style.background=\'#f0fdf4\';" '
